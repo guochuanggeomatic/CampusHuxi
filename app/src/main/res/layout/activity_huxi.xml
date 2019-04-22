@@ -1,0 +1,149 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/primary_material_dark"
+    tools:context=".HuxiActivity">
+
+    <com.supermap.realspace.SceneControl
+        android:id="@+id/sceneControl"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <Button
+        android:id="@+id/button_back"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginTop="20dp"
+        android:background="@android:drawable/ic_menu_revert" />
+
+    <Button
+        android:id="@+id/button_exit"
+        android:layout_width="55dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="30dp"
+        android:background="@android:drawable/ic_menu_close_clear_cancel"
+        android:visibility="invisible" />
+    <com.sa90.materialarcmenu.ArcMenu
+        android:id="@+id/arcMenu"
+        android:layout_width="100dp"
+        android:layout_height="60dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_gravity="bottom|end"
+        app:menu_open="arc_left"
+        app:fabSize="normal"
+        app:menu_scr="@android:drawable/ic_dialog_dialer"
+        >
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/searchSubMenu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/search" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/showRouteSubMenu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/mark" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/functionSubMenu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_dialog_info" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/advanceTechnologySubMenu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_dialog_map" />
+
+    </com.sa90.materialarcmenu.ArcMenu>
+    <com.kongqw.rockerlibrary.view.RockerView
+        android:id="@+id/rockerView_left"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="100dp"
+        android:layout_marginBottom="20dp"
+        android:visibility="invisible"
+        app:areaBackground="@drawable/default_area_bg"
+        app:rockerBackground="@drawable/default_rocker_bg"
+        app:rockerRadius="25dp" />
+
+    <com.kongqw.rockerlibrary.view.RockerView
+        android:id="@+id/rockerView_right"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginRight="100dp"
+        android:layout_marginBottom="20dp"
+        android:visibility="invisible"
+        app:areaBackground="@drawable/default_area_bg"
+        app:rockerBackground="@drawable/default_rocker_bg"
+        app:rockerRadius="25dp" />
+
+    <com.wuzhexiaolu.campusui.control.VerticalSeekBar
+        android:id="@+id/rollVerticalSeekBar"
+        android:layout_width="40dp"
+        android:layout_height="200dp"
+        android:layout_alignBottom="@id/rockerView_left"
+        android:layout_marginLeft="0dp"
+        android:visibility="invisible"
+        />
+    <com.wuzhexiaolu.campusui.control.VerticalSeekBar
+        android:id="@+id/altitudeVerticalSeekBar"
+        android:layout_width="40dp"
+        android:layout_height="200dp"
+        android:layout_alignBottom="@id/rockerView_left"
+        android:layout_marginLeft="50dp"
+        android:visibility="invisible"
+        />
+
+    <com.wuzhexiaolu.campusui.control.VerticalSeekBar
+        android:id="@+id/panVerticalSeekBar"
+        android:layout_width="50dp"
+        android:layout_height="200dp"
+        android:layout_alignBottom="@id/rockerView_right"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="30dp"
+        android:visibility="invisible"
+        />
+
+    <android.support.v7.widget.AppCompatImageButton
+        android:id="@+id/pitchUp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_above="@id/rockerView_left"
+        android:layout_alignLeft="@id/rockerView_left"
+        android:background="@drawable/btn_circle"
+        android:src="@drawable/plus"
+        android:visibility="gone"/>
+
+    <android.support.v7.widget.AppCompatImageButton
+        android:id="@+id/pitchDown"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_above="@id/rockerView_left"
+        android:layout_alignRight="@id/rockerView_left"
+        android:background="@drawable/btn_circle"
+        tools:srcCompat="@android:drawable/divider_horizontal_textfield"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/measureResult"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp"
+        android:text='' />
+
+</RelativeLayout>
