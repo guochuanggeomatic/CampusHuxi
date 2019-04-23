@@ -256,36 +256,30 @@ public class HuxiActivity extends AppCompatActivity {
 
     //返回和退出监听器
     private void setButtonBackAndExitListen() {
-        Button buttonBack = (Button) findViewById(R.id.button_back);
-        buttonExit = (Button) findViewById(R.id.button_exit);
-        buttonBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                android.os.Process.killProcess(android.os.Process.myPid());
+        Button buttonBack = findViewById(R.id.button_back);
+//        buttonBack.setOnClickListener(v -> android.os.Process.killProcess(android.os.Process.myPid()));
+        buttonBack.setOnClickListener(v -> System.exit(0));
+
+        buttonExit = findViewById(R.id.button_exit);
+        buttonExit.setOnClickListener(v -> {
+            if (rocker.rockerState == true) {
+                rocker.rockerViewLeft.setVisibility(View.GONE);
+                rocker.rockerViewRight.setVisibility(View.GONE);
+                rocker.rockerState = false;
+                viewStateChange();
+                rocker.rollVerticalSeekBar.setVisibility(View.GONE);
+                rocker.panVerticalSeekBar.setVisibility(View.GONE);
+                rocker.altitudeVerticalSeekBar.setVisibility(View.GONE);
+                rocker.buttonPitchUp.setVisibility(View.GONE);
+                rocker.buttonPitchDown.setVisibility(View.GONE);
+                Toast.makeText(HuxiActivity.this, "您已退出摇杆模式", Toast.LENGTH_SHORT).show();
             }
-        });
-        buttonExit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (rocker.rockerState == true) {
-                    rocker.rockerViewLeft.setVisibility(View.GONE);
-                    rocker.rockerViewRight.setVisibility(View.GONE);
-                    rocker.rockerState = false;
-                    viewStateChange();
-                    rocker.rollVerticalSeekBar.setVisibility(View.GONE);
-                    rocker.panVerticalSeekBar.setVisibility(View.GONE);
-                    rocker.altitudeVerticalSeekBar.setVisibility(View.GONE);
-                    rocker.buttonPitchUp.setVisibility(View.GONE);
-                    rocker.buttonPitchDown.setVisibility(View.GONE);
-                    Toast.makeText(HuxiActivity.this, "您已退出摇杆模式", Toast.LENGTH_SHORT).show();
-                }
-                if (measure.functionState == true) {
-                    result.setVisibility(View.INVISIBLE);
-                    sceneControl.setAction(Action3D.PANSELECT3D);
-                    viewStateChange();
-                    measure.functionState = false;
-                    Toast.makeText(HuxiActivity.this, "您已退出测量模式", Toast.LENGTH_SHORT).show();
-                }
+            if (measure.functionState == true) {
+                result.setVisibility(View.INVISIBLE);
+                sceneControl.setAction(Action3D.PANSELECT3D);
+                viewStateChange();
+                measure.functionState = false;
+                Toast.makeText(HuxiActivity.this, "您已退出测量模式", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -293,15 +287,13 @@ public class HuxiActivity extends AppCompatActivity {
     //展示路线列表框
     public void showRouteListDialog() {
         final String[] items3 = new String[]{"Route1", "Route2", "Route3", "Route4"};//创建item
+        //添加列表
         AlertDialog alertDialog3 = new AlertDialog.Builder(this)
                 .setTitle("选择要浏览的路线")
-                .setItems(items3, new DialogInterface.OnClickListener() {//添加列表
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        switch (i) {
-                            case 0:
-                                flyComponent.startOrPauseFly(HuxiActivity.this);
-                        }
+                .setItems(items3, (dialogInterface, i) -> {
+                    switch (i) {
+                        case 0:
+                            flyComponent.startOrPauseFly(HuxiActivity.this);
                     }
                 })
                 .create();
