@@ -42,9 +42,6 @@ import java.util.TimerTask;
 
 
 public class HuxiActivity extends AppCompatActivity {
-    // 离线三维场景数据名称
-    // 三维场景名称
-    //手机根目录
     private static final String rootPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
     private static final String localSceneDirPath = rootPath + "/SuperMap/demo/CBD_android/";
     private static final String routePathName = "CBD_android";
