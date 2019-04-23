@@ -42,21 +42,16 @@ import java.util.TimerTask;
 
 
 public class HuxiActivity extends AppCompatActivity {
-    private Workspace workspace;
-    private Scene scene;
-    private SceneControl sceneControl;
     // 离线三维场景数据名称
-    private String workspacePath;
-
     // 三维场景名称
-    private WorkspaceConnectionInfo info;
-    private WorkspaceType workspaceTypetemp = null;
-    private boolean isLicenseAvailable = false;
-
     //手机根目录
     private static final String rootPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
     public static final String localSceneDirPath = rootPath + "/SuperMap/demo/CBD_android/";
     public static final String routePathName = "CBD_android";
+    private static final String workspacePath = rootPath + "/SuperMap/demo/CBD_android/CBD_android.sxwu";
+
+    private Workspace workspace;
+    private SceneControl sceneControl;
 
     //view声明
     private SearchDialog searchDialog;
@@ -65,10 +60,7 @@ public class HuxiActivity extends AppCompatActivity {
     private SearchView searchView;
     private ArcMenu arcMenu;
     private Button buttonExit;
-    private Button buttonBack;
-
     private TextView result;
-
 
     //测量功能
     private Measure measure;
@@ -81,8 +73,6 @@ public class HuxiActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //初始化SuperMap环境
-        initSuperMapEnvironment();
 
         setContentView(R.layout.activity_huxi);
         sceneControl = findViewById(R.id.sceneControl);
@@ -90,7 +80,6 @@ public class HuxiActivity extends AppCompatActivity {
             initAllComponent();
         });
     }
-
 
     private void initAllComponent() {
         initGeoComponent();
@@ -106,7 +95,7 @@ public class HuxiActivity extends AppCompatActivity {
     }
 
     private void initGeoComponent() {
-        isLicenseAvailable = isLicenseAvailable();
+        boolean isLicenseAvailable = isLicenseAvailable();
         if (!isLicenseAvailable) {
             return;
         }
@@ -189,36 +178,28 @@ public class HuxiActivity extends AppCompatActivity {
         });
     }
 
-    //初始化SuperMap环境
-    private void initSuperMapEnvironment() {
-        Environment.setLicensePath(rootPath + "/SuperMap/license/");
-        Environment.setWebCacheDirectory(rootPath + "/SuperMap/WebCache/");
-        Environment.setTemporaryPath(rootPath + "/SuperMap/temp/");
-        Environment.initialization(this);
-    }
-
     // 打开一个本地场景
     private void openLocalScene() {
-        workspacePath = rootPath + "/SuperMap/demo/CBD_android/CBD_android.sxwu";
-        info = new WorkspaceConnectionInfo();
+        WorkspaceConnectionInfo info = new WorkspaceConnectionInfo();
         // 新建一个工作空间对象
         if (workspace == null) {
             workspace = new Workspace();
         }
         // 根据工作空间类型，设置服务路径和类型信息。
-        workspaceTypetemp = WorkspaceType.SXWU;
         info.setServer(workspacePath);
-        info.setType(workspaceTypetemp);
+        info.setType(WorkspaceType.SXWU);
         // 场景关联工作空间
         if (workspace.open(info)) {
-            scene = sceneControl.getScene();
+            Scene scene = sceneControl.getScene();
             scene.setWorkspace(workspace);
         }
         // 打开场景
         String name = workspace.getScenes().get(0);
-        boolean successed = sceneControl.getScene().open(name);
-        if (successed) {
-            Toast.makeText(HuxiActivity.this, "打开场景成功", Toast.LENGTH_LONG);
+        boolean ok = sceneControl.getScene().open(name);
+        if (ok) {
+            Toast.makeText(this, "打开场景成功", Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(this, "打开场景失败", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -227,10 +208,10 @@ public class HuxiActivity extends AppCompatActivity {
     private boolean isLicenseAvailable() {
         LicenseStatus licenseStatus = Environment.getLicenseStatus();
         if (!licenseStatus.isLicenseExsit()) {
-            Toast.makeText(HuxiActivity.this, "许可不存在，场景打开失败，请加入许可", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "许可不存在，场景打开失败，请加入许可", Toast.LENGTH_LONG).show();
             return false;
         } else if (!licenseStatus.isLicenseValid()) {
-            Toast.makeText(HuxiActivity.this, "许可过期，场景打开失败，请更换有效许可", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "许可过期，场景打开失败，请更换有效许可", Toast.LENGTH_LONG).show();
             return false;
         }
         return true;
@@ -278,7 +259,7 @@ public class HuxiActivity extends AppCompatActivity {
 
     //返回和退出监听器
     private void setButtonBackAndExitListen() {
-        buttonBack = (Button) findViewById(R.id.button_back);
+        Button buttonBack = (Button) findViewById(R.id.button_back);
         buttonExit = (Button) findViewById(R.id.button_exit);
         buttonBack.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -357,7 +338,6 @@ public class HuxiActivity extends AppCompatActivity {
                                 default:
                                     break;
                             }
-
                         }
                     }
                 })
@@ -375,5 +355,4 @@ public class HuxiActivity extends AppCompatActivity {
             arcMenu.setVisibility(View.INVISIBLE);
         }
     }
-
 }

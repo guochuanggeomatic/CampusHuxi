@@ -12,18 +12,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends Activity {
-    private com.eicky.ViewPagerGallery gallery;
-    private android.widget.RelativeLayout activitymain;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // 申请权限和证书设置
+        PermissionAndLicenseManager.getPermimssionAndLicense(MainActivity.this);
+
         initGallery();
     }
     private void initGallery(){
-        this.activitymain = (RelativeLayout) findViewById(R.id.activity_main);
-        this.gallery = (com.eicky.ViewPagerGallery) findViewById(R.id.gallery);
+        RelativeLayout activitymain = (RelativeLayout) findViewById(R.id.activity_main);
+        ViewPagerGallery gallery = (ViewPagerGallery) findViewById(R.id.gallery);
         List<Integer> list = new ArrayList<>();
         for (int i = 1; i < 4; i++){
             int id = getResources().getIdentifier("campus" + i, "drawable", getPackageName());
