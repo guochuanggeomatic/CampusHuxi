@@ -21,9 +21,7 @@ public class FlyComponent {
 
     private FlyManager flyManager;
     private ArrayList<String> flyRouteNames = new ArrayList<>();
-    private String flyRoute;
-    private Routes routes;
-    public static boolean isFlying = false;
+    private static boolean isFlying = false;
     public static boolean isStop = false;
 
     /**
@@ -43,12 +41,11 @@ public class FlyComponent {
      */
     public void prepareFly(Activity context, String routePathName, String localSceneDirPath) {
         flyRouteNames.clear();
-        flyRoute = getFlyRoutePath(localSceneDirPath, routePathName);
+        String flyRoute = getFlyRoutePath(localSceneDirPath, routePathName);
         if (flyRoute == null) {
-            Toast.makeText(context, "该场景下无飞行路线", Toast.LENGTH_LONG);
-            return;
+            Toast.makeText(context, "该场景下无飞行路线", Toast.LENGTH_LONG).show();
         } else {
-            routes = flyManager.getRoutes();
+            Routes routes = flyManager.getRoutes();
             boolean hasRoutes = routes.fromFile(flyRoute);
             if (hasRoutes) {
                 int numOfRoutes = routes.getCount();
@@ -56,7 +53,7 @@ public class FlyComponent {
                     flyRouteNames.add(routes.getRouteName(i));
                 }
             } else {
-                Toast.makeText(context, "该场景下无飞行路线", Toast.LENGTH_SHORT);
+                Toast.makeText(context, "该场景下无飞行路线", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -108,7 +105,7 @@ public class FlyComponent {
             sceneControl.setAction(Action3D.PANSELECT3D);
             isFlying = false;
         } else {
-            Toast.makeText(context, "没有正在飞行或者飞行管理未初始化", Toast.LENGTH_SHORT);
+            Toast.makeText(context, "没有正在飞行或者飞行管理未初始化", Toast.LENGTH_SHORT).show();
         }
     }
 }
