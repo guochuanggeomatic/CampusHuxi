@@ -27,7 +27,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -39,8 +38,8 @@ public class LandmarkComponent {
     private static final double radius = 15.;
     private static final int flyTime = 3000;
     private static final String rootPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
-    private static String layerKMlPath = rootPath + "/SuperMap/initKML/default.kml";
-    private static String cameraPath = rootPath + "/SuperMap/initKML/camera.txt";
+    private static final String layerKMlPath = rootPath + "/SuperMap/initKML/default.kml";
+    private static final String cameraPath = rootPath + "/SuperMap/initKML/camera.txt";
 
     private HuxiActivity context;
     private SceneControl sceneControl;
@@ -84,7 +83,7 @@ public class LandmarkComponent {
             }
         }
         if (nearPoint != null) {
-            setSiteClickDialog();
+            setSiteClickDialog(nearPoint.getName());
             introduceDialog.show();
         } else {
             Toast.makeText(context, "附近没有地标" , Toast.LENGTH_SHORT).show();
@@ -203,7 +202,7 @@ public class LandmarkComponent {
     }
 
     //设置地标点击框
-    private void setSiteClickDialog() {
+    private void setSiteClickDialog(String name) {
         View v = context.getLayoutInflater().inflate(R.layout.site_introduce, null);
         introduceDialog = new IntroduceDialog(context, 0, 0, v, R.style.DialogTypeTheme);
         introduceDialog.setCancelable(true);

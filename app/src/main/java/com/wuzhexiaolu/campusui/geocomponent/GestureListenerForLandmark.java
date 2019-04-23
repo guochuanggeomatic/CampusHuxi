@@ -12,16 +12,13 @@ import com.wuzhexiaolu.campusui.HuxiActivity;
  *
  */
 public class GestureListenerForLandmark implements GestureDetector.OnGestureListener {
+    private static final String TAG = "ListenerForPlacemark";
 
-    public static final String TAG = "ListenerForPlacemark";
+    private LandmarkComponent landmarkComponent;
 
-    private HuxiActivity context;
-    private LandmarkComponent placemarkerComponent;
-
-    public GestureListenerForLandmark(HuxiActivity context, LandmarkComponent placemarkerComponent) {
+    public GestureListenerForLandmark(LandmarkComponent landmarkComponent) {
         super();
-        this.context = context;
-        this.placemarkerComponent = placemarkerComponent;
+        this.landmarkComponent = landmarkComponent;
     }
 
     @Override
@@ -36,7 +33,7 @@ public class GestureListenerForLandmark implements GestureDetector.OnGestureList
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
         Point point = getPointFromEvent(e);
-        placemarkerComponent.processSingleTap(point);
+        landmarkComponent.processSingleTap(point);
         return false;
     }
 

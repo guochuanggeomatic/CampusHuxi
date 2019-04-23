@@ -21,9 +21,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class IntroduceDialog extends Dialog {
-     TextView siteNameTextView;
+    TextView siteNameTextView;
     ImageView gifImageView;
-     TextView siteIntroduceTextView;
+    TextView siteIntroduceTextView;
 
 
     public IntroduceDialog(Context context, int width, int height, View layout, int style) {

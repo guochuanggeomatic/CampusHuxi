@@ -5,7 +5,7 @@ import com.supermap.realspace.Camera;
 import com.supermap.realspace.LookAt;
 
 class CameraArgs {
-    private  double longtitude;
+    private  double longitude;
     private  double latitude;
     private  double altitude;
     private AltitudeMode altitudeMode;
@@ -13,7 +13,7 @@ class CameraArgs {
     private double tilt;
 
     public CameraArgs(Camera camera) {
-        longtitude = camera.getLongitude();
+        longitude = camera.getLongitude();
         latitude = camera.getLatitude();
         altitude = camera.getAltitude();
         altitudeMode = camera.getAltitudeMode();
@@ -24,7 +24,7 @@ class CameraArgs {
     public CameraArgs(String record) {
         String[] args =  record.split(" ");
 
-        longtitude = Double.valueOf(args[0]);
+        longitude = Double.valueOf(args[0]);
         latitude = Double.valueOf(args[1]);
         altitude = Double.valueOf(args[2]);
 
@@ -40,6 +40,10 @@ class CameraArgs {
         tilt = Double.valueOf(args[5]);
     }
 
+    /**
+     * 用作把相机参数保存为一个字符串数据，然后保存在文件中。与构造函数中的参数{@code public CameraArgs(String record)}中的一致。
+     * @return
+     */
     @Override
     public String toString() {
         int altitudeIndex;
@@ -50,14 +54,14 @@ class CameraArgs {
         } else {
             altitudeIndex = 2;
         }
-        return longtitude + " " + latitude + " " + altitude + " " + altitudeIndex + " " + heading + " " + tilt;
+        return longitude + " " + latitude + " " + altitude + " " + altitudeIndex + " " + heading + " " + tilt;
     }
 
     public Camera toCamera() {
-        return new Camera(longtitude, latitude, altitude, altitudeMode, heading, tilt);
+        return new Camera(longitude, latitude, altitude, altitudeMode, heading, tilt);
     }
 
     public LookAt toLookAt() {
-        return new LookAt(longtitude, latitude, altitude, altitudeMode, heading, tilt, 100);
+        return new LookAt(longitude, latitude, altitude, altitudeMode, heading, tilt, 100);
     }
 }

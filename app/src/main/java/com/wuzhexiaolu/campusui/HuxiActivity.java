@@ -98,12 +98,12 @@ public class HuxiActivity extends AppCompatActivity {
         }
         openLocalScene();
         flyComponent = new FlyComponent(sceneControl);
-        landmarkComponent = new LandmarkComponent(this);
         // 场景浏览
         flyComponent.prepareFly(HuxiActivity.this, routePathName, localSceneDirPath);
+        landmarkComponent = new LandmarkComponent(this);
         // 设置长按监听，地标相关操作
-        GestureListenerForLandmark gestureListenerForLandmark = new GestureListenerForLandmark(HuxiActivity.this, landmarkComponent);
-        GestureDetector gestureDetector = new GestureDetector(HuxiActivity.this, gestureListenerForLandmark);
+        GestureListenerForLandmark gestureListenerForLandmark = new GestureListenerForLandmark(landmarkComponent);
+        GestureDetector gestureDetector = new GestureDetector(this, gestureListenerForLandmark);
         sceneControl.setGestureDetector(gestureDetector);
     }
 
