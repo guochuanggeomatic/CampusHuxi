@@ -5,6 +5,7 @@ import android.graphics.Point;
 import android.view.View;
 import android.widget.Toast;
 
+import com.supermap.realspace.Scene;
 import com.wuzhexiaolu.campusui.HuxiActivity;
 import com.wuzhexiaolu.campusui.R;
 import com.supermap.data.GeoPlacemark;
@@ -20,7 +21,11 @@ import com.supermap.realspace.PixelToGlobeMode;
 import com.supermap.realspace.SceneControl;
 import com.wuzhexiaolu.campusui.control.IntroduceDialog;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Objects;
@@ -33,22 +38,22 @@ public class LandmarkComponent {
     private static final String layerName = "Favorite_KML";
     private static final double radius = 15.;
     private static final int flyTime = 3000;
+    private static final String rootPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
+    private static String layerKMlPath = rootPath + "/SuperMap/initKML/default.kml";
+    private static String cameraPath = rootPath + "/SuperMap/initKML/camera.txt";
 
     private HuxiActivity context;
     private SceneControl sceneControl;
     private IntroduceDialog introduceDialog;
-
-    private ArrayList<Feature3D> featurePointsList = new ArrayList<>();
-    private String rootPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
-    private String layerKMlPath = rootPath + "/SuperMap/initKML/default.kml";
-
     private Layer3Ds layer3Ds;
+
+    private ArrayList<LandFeature> landFeatures= new ArrayList<>();
 
     public LandmarkComponent(HuxiActivity context) {
         super();
         this.context = context;
         this.sceneControl = context.findViewById(R.id.sceneControl);
-        loadFeaturesFromKML();
+        loadFeaturesFromFile();
     }
 
     public void processSingleTap(Point point) {
@@ -65,16 +70,16 @@ public class LandmarkComponent {
         Point3D point3D = sceneControl.getScene().pixelToGlobe(point, PixelToGlobeMode.TERRAINANDMODEL);
         double minDistance = LandmarkComponent.radius;
         Feature3D nearPoint = null;
-        for (Feature3D feature3D :
-                featurePointsList) {
-            Point3D featurePoint3D = feature3D.getGeometry().getPosition();
+        for (int i = 0; i < landFeatures.size(); i++) {
+            LandFeature landFeature = landFeatures.get(i);
+            Point3D featurePoint3D = landFeature.getFeature3D().getGeometry().getPosition();
             double distance = Math.sqrt(
                     Math.pow(point3D.getX() - featurePoint3D.getX(), 2.) +
                     Math.pow(point3D.getY() - featurePoint3D.getY(), 2.) +
                     Math.pow(point3D.getZ() - featurePoint3D.getZ(), 2.)
             );
             if (distance < minDistance) {
-                nearPoint = feature3D;
+                nearPoint = landFeature.getFeature3D();
                 minDistance = distance;
             }
         }
@@ -92,9 +97,9 @@ public class LandmarkComponent {
      * @return
      */
     public String[] getLandmarkNames() {
-        String[] ret = new String[featurePointsList.size()];
-        for (int i = 0; i < featurePointsList.size(); i++) {
-            ret[i] = featurePointsList.get(i).getName();
+        String[] ret = new String[landFeatures.size()];
+        for (int i = 0; i < landFeatures.size(); i++) {
+            ret[i] = landFeatures.get(i).getFeature3D().getName();
         }
         return ret;
     }
@@ -106,10 +111,10 @@ public class LandmarkComponent {
      */
     @SuppressLint("NewApi")
     public void flyToSpecifiedLand(String landmarkName) {
-        for (Feature3D feature3D :
-                featurePointsList) {
-            if (Objects.equals(feature3D.getName(), landmarkName)) {
-                flyToFeature3D(feature3D);
+        for (LandFeature landFeature :
+                landFeatures) {
+            if (Objects.equals(landFeature.getFeature3D().getName(), landmarkName)) {
+                changeCameraTo(landFeature);
                 return ;
             }
         }
@@ -122,10 +127,10 @@ public class LandmarkComponent {
      * @param index
      */
     public void flyToSpecifiedLand(int index) {
-        if (index < 0 || index >= featurePointsList.size()) {
+        if (index < 0 || index >= landFeatures.size()) {
             return ;
         }
-        flyToFeature3D(featurePointsList.get(index));
+        changeCameraTo(landFeatures.get(index));
     }
 
     private void flyToFeature3D(Feature3D feature3D) {
@@ -136,10 +141,15 @@ public class LandmarkComponent {
         Toast.makeText(context, "正在飞向" + feature3D.getName(), Toast.LENGTH_LONG).show();
     }
 
+    private void changeCameraTo(LandFeature landFeature) {
+        Scene scene = sceneControl.getScene();
+        scene.setCamera(landFeature.getCamera());
+    }
+
     /**
      * 如果文件没有存在，那么就会创建一个文件
      */
-    private void loadFeaturesFromKML() {
+    private void loadFeaturesFromFile() {
         openOrCreateFile(layerKMlPath);
         // 从 kml 中添加
         layer3Ds = sceneControl.getScene().getLayers();
@@ -148,8 +158,23 @@ public class LandmarkComponent {
         if (layer3d != null) {
             Feature3Ds feature3Ds = layer3d.getFeatures();
             Feature3D[] feature3DArray = feature3Ds.getFeatureArray(Feature3DSearchOption.ALLFEATURES);
-            featurePointsList.clear();
-            Collections.addAll(featurePointsList, feature3DArray);
+            landFeatures.clear();
+            try {
+                FileInputStream fis = new FileInputStream(cameraPath);
+                InputStreamReader isr = new InputStreamReader(fis, "UTF-8");
+                BufferedReader bufferedReader = new BufferedReader(isr);
+                for (Feature3D feature3D :
+                        feature3DArray) {
+                    String record = bufferedReader.readLine();
+                    if (record  == null) {
+                        break;
+                    }
+                    CameraArgs cameraArgs = new CameraArgs(record);
+                    landFeatures.add(new LandFeature(feature3D, cameraArgs.toCamera(), cameraArgs.toLookAt()));
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -158,7 +183,6 @@ public class LandmarkComponent {
         if (layer3D != null) {
             layer3Ds.removeLayerWithName(hideLayerName);
         }
-
     }
 
     /**
