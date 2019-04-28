@@ -43,7 +43,6 @@ public class LandmarkComponent {
 
     private HuxiActivity context;
     private SceneControl sceneControl;
-    private IntroduceDialog introduceDialog;
     private Layer3Ds layer3Ds;
 
     private ArrayList<LandFeature> landFeatures= new ArrayList<>();
@@ -83,8 +82,7 @@ public class LandmarkComponent {
             }
         }
         if (nearPoint != null) {
-            setSiteClickDialog(nearPoint.getName());
-            introduceDialog.show();
+            showIntroduceDialog(nearPoint.getName());
         } else {
             Toast.makeText(context, "附近没有地标" , Toast.LENGTH_SHORT).show();
         }
@@ -201,10 +199,11 @@ public class LandmarkComponent {
         }
     }
 
-    //设置地标点击框
-    private void setSiteClickDialog(String name) {
+    // 点击的时候，地标就会响应，弹出 IntroduceDialog
+    private void showIntroduceDialog(String name) {
         View v = context.getLayoutInflater().inflate(R.layout.site_introduce, null);
-        introduceDialog = new IntroduceDialog(context, 0, 0, v, R.style.DialogTypeTheme);
+        IntroduceDialog introduceDialog = new IntroduceDialog(context, 0, 0, v, R.style.DialogTypeTheme);
         introduceDialog.setCancelable(true);
+        introduceDialog.show();
     }
 }
