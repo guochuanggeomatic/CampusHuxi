@@ -44,25 +44,25 @@
             android:id="@+id/searchSubMenu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/search" />
+            android:src="@drawable/landmark" />
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/showRouteSubMenu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/mark" />
+            android:src="@drawable/fly_route" />
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/functionSubMenu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@android:drawable/ic_dialog_info" />
+            android:src="@drawable/measurement" />
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/advanceTechnologySubMenu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@android:drawable/ic_dialog_map" />
+            android:src="@android:drawable/ic_dialog_info" />
 
     </com.sa90.materialarcmenu.ArcMenu>
     <com.kongqw.rockerlibrary.view.RockerView
@@ -145,5 +145,12 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="20dp"
         android:text='' />
+
+    <ImageView
+        android:id="@+id/full_screen_image_campus_d"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/campus1"
+        android:visibility="invisible"/>
 
 </RelativeLayout>

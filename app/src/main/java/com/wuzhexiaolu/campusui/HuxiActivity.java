@@ -82,6 +82,7 @@ public class HuxiActivity extends AppCompatActivity {
         initGeoComponent();
         initUIComponent();
         initFunctionComponent();
+        findViewById(R.id.full_screen_image_campus_d).setVisibility(View.GONE);
     }
 
     private void initFunctionComponent() {
