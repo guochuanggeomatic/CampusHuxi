@@ -37,32 +37,52 @@
         android:layout_alignParentRight="true"
         android:layout_gravity="bottom|end"
         app:menu_open="arc_left"
-        app:fabSize="normal"
+        app:fabSize="auto"
         app:menu_scr="@android:drawable/ic_dialog_dialer"
         >
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/searchSubMenu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/landmark" />
+            android:src="@drawable/landmark_search"
+
+            android:padding="0dp"
+            android:scaleType="center"
+            app:fabSize="auto"
+            />
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/showRouteSubMenu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/fly_route" />
+            android:src="@drawable/fly_route"
+
+            android:padding="0dp"
+            android:scaleType="center"
+            app:fabSize="auto"
+            />
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/functionSubMenu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/measurement" />
+            android:src="@drawable/measurement"
+
+            android:padding="0dp"
+            android:scaleType="center"
+            app:fabSize="auto"
+            />
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/advanceTechnologySubMenu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@android:drawable/ic_dialog_info" />
+            android:src="@drawable/uav"
+
+            android:padding="0dp"
+            android:scaleType="center"
+            app:fabSize="auto"
+            />
 
     </com.sa90.materialarcmenu.ArcMenu>
     <com.kongqw.rockerlibrary.view.RockerView

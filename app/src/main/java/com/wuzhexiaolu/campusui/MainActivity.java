@@ -22,7 +22,6 @@ public class MainActivity extends Activity {
         // 申请权限和证书设置
         PermissionAndLicenseManager.getPermimssionAndLicense(MainActivity.this);
         initGallery();
-        findViewById(R.id.full_screen_image_campus_d).setVisibility(View.VISIBLE);
     }
     private void initGallery(){
         ViewPagerGallery gallery = (ViewPagerGallery) findViewById(R.id.gallery);

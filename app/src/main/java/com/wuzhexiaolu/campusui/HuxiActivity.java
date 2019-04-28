@@ -70,7 +70,6 @@ public class HuxiActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_huxi);
         sceneControl = findViewById(R.id.sceneControl);
         sceneControl.sceneControlInitedComplete(success -> {
