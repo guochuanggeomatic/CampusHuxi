@@ -5,6 +5,7 @@ import android.graphics.Point;
 import android.view.View;
 import android.widget.Toast;
 
+import com.supermap.realspace.Camera;
 import com.supermap.realspace.Scene;
 import com.wuzhexiaolu.campusui.HuxiActivity;
 import com.wuzhexiaolu.campusui.R;
@@ -21,11 +22,8 @@ import com.supermap.realspace.PixelToGlobeMode;
 import com.supermap.realspace.SceneControl;
 import com.wuzhexiaolu.campusui.control.IntroduceDialog;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -54,7 +52,7 @@ public class LandmarkComponent {
         loadFeaturesFromFile();
     }
 
-    public void processSingleTap(Point point) {
+    void processSingleTap(Point point) {
         nearByLandmark(point);
     }
 
@@ -147,7 +145,7 @@ public class LandmarkComponent {
      * 如果文件没有存在，那么就会创建一个文件
      */
     private void loadFeaturesFromFile() {
-        openOrCreateFile(layerKMlPath);
+        openOrCreateFile();
         // 从 kml 中添加
         layer3Ds = sceneControl.getScene().getLayers();
         layer3Ds.addLayerWith(layerKMlPath, Layer3DType.KML, true, layerName);
@@ -157,17 +155,10 @@ public class LandmarkComponent {
             Feature3D[] feature3DArray = feature3Ds.getFeatureArray(Feature3DSearchOption.ALLFEATURES);
             landFeatures.clear();
             try {
-                FileInputStream fis = new FileInputStream(cameraPath);
-                InputStreamReader isr = new InputStreamReader(fis, "UTF-8");
-                BufferedReader bufferedReader = new BufferedReader(isr);
-                for (Feature3D feature3D :
-                        feature3DArray) {
-                    String record = bufferedReader.readLine();
-                    if (record  == null) {
-                        break;
-                    }
-                    CameraArgs cameraArgs = new CameraArgs(record);
-                    landFeatures.add(new LandFeature(feature3D, cameraArgs.toCamera(), cameraArgs.toLookAt()));
+                CameraFileReader cameraFileReader = new CameraFileReader(cameraPath);
+                Camera[] cameras = cameraFileReader.getCameraArray();
+                for (int i = 0; i < feature3DArray.length; i++) {
+                    landFeatures.add(new LandFeature(feature3DArray[i], cameras[i]));
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -185,12 +176,11 @@ public class LandmarkComponent {
     /**
      * 根据文件名生成文件，存储 kml 文件的信息。
      *
-     * @param filePath
      * @return
      */
-    private static void openOrCreateFile(String filePath) {
+    private static void openOrCreateFile() {
         try {
-            File file = new File(filePath);
+            File file = new File(LandmarkComponent.layerKMlPath);
             if (!file.exists()) {
                 file.createNewFile();
             }
@@ -205,5 +195,23 @@ public class LandmarkComponent {
         IntroduceDialog introduceDialog = new IntroduceDialog(context, 0, 0, v, R.style.DialogTypeTheme);
         introduceDialog.setCancelable(true);
         introduceDialog.show();
+    }
+
+    private static class LandFeature {
+        private Feature3D feature3D;
+        private Camera camera;
+
+        LandFeature(Feature3D feature3D, Camera camera) {
+            this.feature3D = feature3D;
+            this.camera = camera;
+        }
+
+        Feature3D getFeature3D() {
+            return feature3D;
+        }
+
+        Camera getCamera() {
+            return camera;
+        }
     }
 }
