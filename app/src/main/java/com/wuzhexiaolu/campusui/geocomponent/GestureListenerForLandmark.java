@@ -13,7 +13,7 @@ import com.wuzhexiaolu.campusui.HuxiActivity;
  */
 public class GestureListenerForLandmark implements GestureDetector.OnGestureListener {
     private static final String TAG = "ListenerForPlacemark";
-
+    // share the information
     private LandmarkComponent landmarkComponent;
 
     public GestureListenerForLandmark(LandmarkComponent landmarkComponent) {
@@ -33,7 +33,7 @@ public class GestureListenerForLandmark implements GestureDetector.OnGestureList
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
         Point point = getPointFromEvent(e);
-        landmarkComponent.processSingleTap(point);
+        landmarkComponent.nearByLandmark(point);
         return false;
     }
 

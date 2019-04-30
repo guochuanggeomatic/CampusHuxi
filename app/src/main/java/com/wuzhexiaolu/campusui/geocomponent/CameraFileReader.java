@@ -20,7 +20,8 @@ class CameraFileReader {
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
         String record = bufferedReader.readLine();
         while (record != null) {
-            cameras.add(parseStringToCamera(record));
+            Camera camera = parseStringToCamera(record);
+            cameras.add(camera);
             record = bufferedReader.readLine();
         }
     }

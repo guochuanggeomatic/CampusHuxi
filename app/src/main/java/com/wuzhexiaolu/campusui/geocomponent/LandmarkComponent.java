@@ -41,7 +41,6 @@ public class LandmarkComponent {
 
     private HuxiActivity context;
     private SceneControl sceneControl;
-    private Layer3Ds layer3Ds;
 
     private ArrayList<LandFeature> landFeatures= new ArrayList<>();
 
@@ -52,17 +51,13 @@ public class LandmarkComponent {
         loadFeaturesFromFile();
     }
 
-    void processSingleTap(Point point) {
-        nearByLandmark(point);
-    }
-
     /**
      * 通过传入的 android.graphics.Point 的类和半径来判断，附近是否有点.
      *
      * @param point
      * @return
      */
-    private void nearByLandmark(Point point) {
+    void nearByLandmark(Point point) {
         Point3D point3D = sceneControl.getScene().pixelToGlobe(point, PixelToGlobeMode.TERRAINANDMODEL);
         double minDistance = LandmarkComponent.radius;
         Feature3D nearPoint = null;
@@ -147,7 +142,7 @@ public class LandmarkComponent {
     private void loadFeaturesFromFile() {
         openOrCreateFile();
         // 从 kml 中添加
-        layer3Ds = sceneControl.getScene().getLayers();
+        Layer3Ds layer3Ds = sceneControl.getScene().getLayers();
         layer3Ds.addLayerWith(layerKMlPath, Layer3DType.KML, true, layerName);
         Layer3D layer3d = sceneControl.getScene().getLayers().get(layerName);
         if (layer3d != null) {
@@ -163,13 +158,6 @@ public class LandmarkComponent {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    public void hideLandmarks(String hideLayerName) {
-        Layer3D layer3D = layer3Ds.get(hideLayerName);
-        if (layer3D != null) {
-            layer3Ds.removeLayerWithName(hideLayerName);
         }
     }
 
