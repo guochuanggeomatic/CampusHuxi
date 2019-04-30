@@ -3,13 +3,10 @@ package com.wuzhexiaolu.campusui;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.view.GestureDetector;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -17,7 +14,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.kongqw.rockerlibrary.view.RockerView;
 import com.sa90.materialarcmenu.ArcMenu;
 import com.sa90.materialarcmenu.StateChangeListener;
 import com.supermap.data.Environment;
@@ -26,19 +22,14 @@ import com.supermap.data.Workspace;
 import com.supermap.data.WorkspaceConnectionInfo;
 import com.supermap.data.WorkspaceType;
 import com.supermap.realspace.Action3D;
-import com.supermap.realspace.Camera;
 import com.supermap.realspace.Scene;
 import com.supermap.realspace.SceneControl;
-import com.supermap.realspace.Sightline;
 import com.wuzhexiaolu.campusui.AdvanceTechnology.Rocker;
-import com.wuzhexiaolu.campusui.control.*;
+import com.wuzhexiaolu.campusui.ui.*;
 import com.wuzhexiaolu.campusui.function.Measure;
 import com.wuzhexiaolu.campusui.geocomponent.FlyComponent;
 import com.wuzhexiaolu.campusui.geocomponent.GestureListenerForLandmark;
 import com.wuzhexiaolu.campusui.geocomponent.LandmarkComponent;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 
 public class HuxiActivity extends AppCompatActivity {

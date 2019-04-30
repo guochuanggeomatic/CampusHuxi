@@ -41,4 +41,6 @@ dependencies {
     implementation files('libs/com.supermap.realspace_v911.jar')
     implementation project(':menu')
     implementation project(':KqwRockerLibrary')
+    implementation 'com.github.bumptech.glide:glide:3.7.0'
+
 }

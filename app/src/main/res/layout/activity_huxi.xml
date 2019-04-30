@@ -93,7 +93,7 @@
         app:rockerBackground="@drawable/default_rocker_bg"
         app:rockerRadius="25dp" />
 
-    <com.wuzhexiaolu.campusui.control.VerticalSeekBar
+    <com.wuzhexiaolu.campusui.ui.VerticalSeekBar
         android:id="@+id/rollVerticalSeekBar"
         android:layout_width="40dp"
         android:layout_height="200dp"
@@ -101,7 +101,7 @@
         android:layout_marginLeft="0dp"
         android:visibility="invisible"
         />
-    <com.wuzhexiaolu.campusui.control.VerticalSeekBar
+    <com.wuzhexiaolu.campusui.ui.VerticalSeekBar
         android:id="@+id/altitudeVerticalSeekBar"
         android:layout_width="40dp"
         android:layout_height="200dp"
@@ -110,7 +110,7 @@
         android:visibility="invisible"
         />
 
-    <com.wuzhexiaolu.campusui.control.VerticalSeekBar
+    <com.wuzhexiaolu.campusui.ui.VerticalSeekBar
         android:id="@+id/panVerticalSeekBar"
         android:layout_width="50dp"
         android:layout_height="200dp"

@@ -2,9 +2,13 @@ package com.wuzhexiaolu.campusui.geocomponent;
 
 import android.annotation.SuppressLint;
 import android.graphics.Point;
+import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.supermap.realspace.Camera;
 import com.supermap.realspace.Scene;
 import com.wuzhexiaolu.campusui.HuxiActivity;
@@ -20,7 +24,7 @@ import com.supermap.realspace.Layer3DType;
 import com.supermap.realspace.Layer3Ds;
 import com.supermap.realspace.PixelToGlobeMode;
 import com.supermap.realspace.SceneControl;
-import com.wuzhexiaolu.campusui.control.IntroduceDialog;
+import com.wuzhexiaolu.campusui.ui.IntroduceDialog;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +45,13 @@ public class LandmarkComponent {
 
     private HuxiActivity context;
     private SceneControl sceneControl;
+    /**
+     * 这个 IntroduceDialog 能够接受{@code String landmarkname}作为参数，
+     * 然后弹出相应介绍框。
+     *
+     * 构造的时候，文件缺失会抛出 IOException。并且自身为 null。
+     */
+    private IntroduceDialog introduceDialog = null;
 
     private ArrayList<LandFeature> landFeatures= new ArrayList<>();
 
@@ -49,6 +60,12 @@ public class LandmarkComponent {
         this.context = context;
         this.sceneControl = context.findViewById(R.id.sceneControl);
         loadFeaturesFromFile();
+        try {
+            introduceDialog = new IntroduceDialog(context);
+        } catch (IOException e) {
+            Toast.makeText(context, "地标文件描述文件打开失败", Toast.LENGTH_SHORT).show();
+            introduceDialog = null;
+        }
     }
 
     /**
@@ -74,8 +91,8 @@ public class LandmarkComponent {
                 minDistance = distance;
             }
         }
-        if (nearPoint != null) {
-            showIntroduceDialog(nearPoint.getName());
+        if (nearPoint != null && introduceDialog != null) {
+            introduceDialog.show(nearPoint.getName());
         } else {
             Toast.makeText(context, "附近没有地标" , Toast.LENGTH_SHORT).show();
         }
@@ -104,36 +121,13 @@ public class LandmarkComponent {
         for (LandFeature landFeature :
                 landFeatures) {
             if (Objects.equals(landFeature.getFeature3D().getName(), landmarkName)) {
-                changeCameraTo(landFeature);
+                Scene scene = sceneControl.getScene();
+                Camera camera = landFeature.getCamera();
+                scene.setCamera(camera);
                 return ;
             }
         }
         Toast.makeText(context, layerKMlPath + ".kml 文件中并没有这个地标", Toast.LENGTH_LONG).show();
-    }
-
-    /**
-     * 提供地标的序号，点击之后将会飞到那个地方。
-     *
-     * @param index
-     */
-    public void flyToSpecifiedLand(int index) {
-        if (index < 0 || index >= landFeatures.size()) {
-            return ;
-        }
-        changeCameraTo(landFeatures.get(index));
-    }
-
-    private void flyToFeature3D(Feature3D feature3D) {
-        GeoPlacemark geoPlacemark = (GeoPlacemark) feature3D.getGeometry();
-        GeoPoint3D geoPoint3D = (GeoPoint3D) geoPlacemark.getGeometry();
-        Point3D pot = new Point3D(geoPoint3D.getX(), geoPoint3D.getY(), geoPoint3D.getZ() + 200);
-        sceneControl.getScene().flyToPoint(pot, flyTime);
-        Toast.makeText(context, "正在飞向" + feature3D.getName(), Toast.LENGTH_LONG).show();
-    }
-
-    private void changeCameraTo(LandFeature landFeature) {
-        Scene scene = sceneControl.getScene();
-        scene.setCamera(landFeature.getCamera());
     }
 
     /**
@@ -175,14 +169,6 @@ public class LandmarkComponent {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    // 点击的时候，地标就会响应，弹出 IntroduceDialog
-    private void showIntroduceDialog(String name) {
-        View v = context.getLayoutInflater().inflate(R.layout.site_introduce, null);
-        IntroduceDialog introduceDialog = new IntroduceDialog(context, 0, 0, v, R.style.DialogTypeTheme);
-        introduceDialog.setCancelable(true);
-        introduceDialog.show();
     }
 
     private static class LandFeature {

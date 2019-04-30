@@ -3,12 +3,10 @@ package com.wuzhexiaolu.campusui.geocomponent;
 import com.supermap.data.AltitudeMode;
 import com.supermap.realspace.Camera;
 
-import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 class CameraFileReader {
 
@@ -16,13 +14,11 @@ class CameraFileReader {
 
     CameraFileReader(String filename) throws IOException {
         FileInputStream fileInputStream = new FileInputStream(filename);
-        InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8);
-        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-        String record = bufferedReader.readLine();
-        while (record != null) {
+        Scanner in = new Scanner(fileInputStream);
+        while (in.hasNextLine()) {
+            String record = in.nextLine();
             Camera camera = parseStringToCamera(record);
             cameras.add(camera);
-            record = bufferedReader.readLine();
         }
     }
 

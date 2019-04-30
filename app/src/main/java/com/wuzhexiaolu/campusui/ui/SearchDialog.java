@@ -1,4 +1,4 @@
-package com.wuzhexiaolu.campusui.control;
+package com.wuzhexiaolu.campusui.ui;
 
 import android.app.Dialog;
 import android.content.Context;
