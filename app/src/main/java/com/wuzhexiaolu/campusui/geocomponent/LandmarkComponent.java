@@ -2,6 +2,8 @@ package com.wuzhexiaolu.campusui.geocomponent;
 
 import android.annotation.SuppressLint;
 import android.graphics.Point;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -74,6 +76,7 @@ public class LandmarkComponent {
      * @param point
      * @return
      */
+    @RequiresApi(api = Build.VERSION_CODES.N)
     void nearByLandmark(Point point) {
         Point3D point3D = sceneControl.getScene().pixelToGlobe(point, PixelToGlobeMode.TERRAINANDMODEL);
         double minDistance = LandmarkComponent.radius;
@@ -104,11 +107,11 @@ public class LandmarkComponent {
      * @return
      */
     public String[] getLandmarkNames() {
-        String[] ret = new String[landFeatures.size()];
+        String[] totalLandmarkNames = new String[landFeatures.size()];
         for (int i = 0; i < landFeatures.size(); i++) {
-            ret[i] = landFeatures.get(i).getFeature3D().getName();
+            totalLandmarkNames[i] = landFeatures.get(i).getFeature3D().getName();
         }
-        return ret;
+        return totalLandmarkNames;
     }
 
     /**
