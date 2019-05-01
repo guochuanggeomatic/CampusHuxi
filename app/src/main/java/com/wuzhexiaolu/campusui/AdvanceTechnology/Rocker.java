@@ -11,7 +11,7 @@ import com.supermap.realspace.Camera;
 import com.supermap.realspace.SceneControl;
 import com.wuzhexiaolu.campusui.HuxiActivity;
 import com.wuzhexiaolu.campusui.R;
-import com.wuzhexiaolu.campusui.control.VerticalSeekBar;
+import com.wuzhexiaolu.campusui.ui.VerticalSeekBar;
 
 import java.util.Timer;
 import java.util.TimerTask;
