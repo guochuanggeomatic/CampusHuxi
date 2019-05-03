@@ -5,11 +5,8 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -89,8 +86,11 @@ public class HuxiActivity extends AppCompatActivity {
     private void initUIComponent() {
         //设置返回和退出按钮监听器
         setButtonBackAndExitListen();
-        //设置搜索框
-        setSearchDialog();
+        //设置地标搜索框
+        //获取SearchDialog并且对类进行初始化
+        @SuppressLint("InflateParams") View v = getLayoutInflater().inflate(R.layout.search_dialog, null);
+        searchDialog = new SearchDialog(this, v, R.style.DialogTypeTheme);
+        searchDialog.stuffWithLandmark(landmarkComponent);
         //设置菜单
         setMenu();
     }
@@ -197,46 +197,6 @@ public class HuxiActivity extends AppCompatActivity {
             return false;
         }
         return true;
-    }
-
-
-    //设置搜索框
-    private void setSearchDialog() {
-        //获取SearchDialog并且对类进行初始化
-        View v = getLayoutInflater().inflate(R.layout.search_dialog, null);
-        searchDialog = new SearchDialog(this, 0, 0, v, R.style.DialogTypeTheme);
-        searchDialog.setCancelable(true);
-        SearchView searchView = searchDialog.getSearchView();
-        ListView listView = searchDialog.getListView();
-        final ArrayAdapter arrayAdapter;
-        //对布局内的控件进行设置
-        arrayAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_dropdown_item_1line, landmarkComponent.getLandmarkNames());
-        listView.setAdapter(arrayAdapter);
-        //ListView启动过滤
-        listView.setTextFilterEnabled(true);
-        //一开始不显示
-        listView.setVisibility(View.VISIBLE);
-        listView.setOnItemClickListener((parent, view, position, id) -> {
-            landmarkComponent.flyToSpecifiedLand((String) arrayAdapter.getItem(position));
-            searchDialog.hide();
-        });
-        //显示搜索按钮
-        searchView.setSubmitButtonEnabled(true);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            //单击搜索按钮的监听
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            //输入字符的监听
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                arrayAdapter.getFilter().filter(newText);
-                return true;
-            }
-        });
     }
 
     //返回和退出监听器

@@ -34,7 +34,7 @@ public class IntroduceDialog extends Dialog {
     /**
      * 这个文件包含了所有地标的对应的名字，空格后紧跟介绍。
      */
-    private static String landmarkDescriptionFileName = "text.txt";
+    private static final String landmarkDescriptionFileName = "text.txt";
 
     /**
      * 这个 context 是 HuxiActivity，可以在上面进行一系列行为。
