@@ -12,6 +12,13 @@ class CameraFileReader {
 
     private ArrayList<Camera> cameras = new ArrayList<>();
 
+    /**
+     *
+     * @param filename
+     *      保存相机的文件，从中按行读取，一行构造出一个相机对象。
+     * @throws IOException
+     *      如果文件不存在，抛出异常。
+     */
     CameraFileReader(String filename) throws IOException {
         FileInputStream fileInputStream = new FileInputStream(filename);
         Scanner in = new Scanner(fileInputStream);

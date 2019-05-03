@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
-import android.view.GestureDetector;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -24,18 +23,17 @@ import com.supermap.data.WorkspaceType;
 import com.supermap.realspace.Action3D;
 import com.supermap.realspace.Scene;
 import com.supermap.realspace.SceneControl;
+import com.supermap.realspace.SceneServicesList;
 import com.wuzhexiaolu.campusui.AdvanceTechnology.Rocker;
 import com.wuzhexiaolu.campusui.ui.*;
 import com.wuzhexiaolu.campusui.function.Measure;
 import com.wuzhexiaolu.campusui.geocomponent.FlyComponent;
-import com.wuzhexiaolu.campusui.geocomponent.GestureListenerForLandmark;
 import com.wuzhexiaolu.campusui.geocomponent.LandmarkComponent;
 
 
 public class HuxiActivity extends AppCompatActivity {
     public static final String rootPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
-    public static final String localSceneDirPath = rootPath + "/SuperMap/demo/CBD_android/";
-    public static final String routePathName = "CBD_android";
+    public static final String flyRoutePathName = rootPath + "/SuperMap/demo/CBD_android/wujing.fpf";
     public static final String workspacePath = rootPath + "/SuperMap/demo/CBD_android/CBD_android.sxwu";
 
     private Workspace workspace;
@@ -43,9 +41,6 @@ public class HuxiActivity extends AppCompatActivity {
 
     //view声明
     private SearchDialog searchDialog;
-    private IntroduceDialog introduceDialog;
-    private ListView listView;
-    private SearchView searchView;
     private ArcMenu arcMenu;
     private Button buttonExit;
     private TextView result;
@@ -63,16 +58,13 @@ public class HuxiActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_huxi);
         sceneControl = findViewById(R.id.sceneControl);
+        findViewById(R.id.full_screen_image_campus_d).setVisibility(View.VISIBLE);
         sceneControl.sceneControlInitedComplete(success -> {
-            initAllComponent();
+            initGeoComponent();
+            initUIComponent();
+            initFunctionComponent();
+            findViewById(R.id.full_screen_image_campus_d).setVisibility(View.GONE);
         });
-    }
-
-    private void initAllComponent() {
-        initGeoComponent();
-        initUIComponent();
-        initFunctionComponent();
-        findViewById(R.id.full_screen_image_campus_d).setVisibility(View.GONE);
     }
 
     private void initFunctionComponent() {
@@ -88,14 +80,9 @@ public class HuxiActivity extends AppCompatActivity {
             return;
         }
         openLocalScene();
-        flyComponent = new FlyComponent(sceneControl);
+        flyComponent = new FlyComponent(this, flyRoutePathName);
         // 场景浏览
-        flyComponent.prepareFly(HuxiActivity.this, routePathName, localSceneDirPath);
         landmarkComponent = new LandmarkComponent(this);
-        // 设置长按监听，地标相关操作
-        GestureListenerForLandmark gestureListenerForLandmark = new GestureListenerForLandmark(landmarkComponent);
-        GestureDetector gestureDetector = new GestureDetector(this, gestureListenerForLandmark);
-        sceneControl.setGestureDetector(gestureDetector);
     }
 
     //初始化超图场景
@@ -103,16 +90,15 @@ public class HuxiActivity extends AppCompatActivity {
         //设置返回和退出按钮监听器
         setButtonBackAndExitListen();
         //设置搜索框
-        setSearchDialog(landmarkComponent.getLandmarkNames());
+        setSearchDialog();
         //设置菜单
         setMenu();
     }
 
     //设置按钮
     private void setMenu() {
-        arcMenu = (ArcMenu) findViewById(R.id.arcMenu);
+        arcMenu = findViewById(R.id.arcMenu);
         arcMenu.setRadius(getResources().getDimension(R.dimen.radius));
-
         arcMenu.setStateChangeListener(new StateChangeListener() {
             @Override
             public void onMenuOpened() {
@@ -122,20 +108,20 @@ public class HuxiActivity extends AppCompatActivity {
             public void onMenuClosed() {
             }
         });
-
-        findViewById(R.id.searchSubMenu).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                searchDialog.show();
-                arcMenu.toggleMenu();
-            }
+        findViewById(R.id.searchSubMenu).setOnClickListener(v -> {
+            searchDialog.show();
+            arcMenu.toggleMenu();
         });
-        findViewById(R.id.showRouteSubMenu).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                arcMenu.toggleMenu();
-                showRouteListDialog();
-            }
+        // 从飞行组件中获取路径列表，如果没有就会得到空的，diaLog就没有数据。
+        AlertDialog flyRouteAlertDialog = new AlertDialog.Builder(HuxiActivity.this)
+                .setTitle("选择要浏览的路线")
+                .setItems(flyComponent.getRouteNames(), (dialogInterface, i) -> {
+                    flyComponent.startOrPauseFly(i);
+                })
+                .create();
+        findViewById(R.id.showRouteSubMenu).setOnClickListener(v -> {
+            arcMenu.toggleMenu();
+            flyRouteAlertDialog.show();
         });
         findViewById(R.id.functionSubMenu).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -144,26 +130,34 @@ public class HuxiActivity extends AppCompatActivity {
                 showMeasureListDialog();
             }
         });
-        findViewById(R.id.advanceTechnologySubMenu).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                arcMenu.toggleMenu();
-                if (rocker.rockerState == false) {
-                    rocker.rockerViewRight.setVisibility(View.VISIBLE);
-                    rocker.rockerViewLeft.setVisibility(View.VISIBLE);
-                    buttonExit.setVisibility(View.VISIBLE);
-                    arcMenu.setVisibility(View.INVISIBLE);
-                    rocker.rockerState = true;
-                    rocker.rollVerticalSeekBar.setVisibility(View.VISIBLE);
-                    rocker.panVerticalSeekBar.setVisibility(View.VISIBLE);
-                    rocker.altitudeVerticalSeekBar.setVisibility(View.VISIBLE);
-                    rocker.buttonPitchUp.setVisibility(View.VISIBLE);
-                    rocker.buttonPitchDown.setVisibility(View.VISIBLE);
-                    Toast.makeText(HuxiActivity.this, "无人机摇杆模拟开始", Toast.LENGTH_SHORT).show();
-
-                }
+        findViewById(R.id.advanceTechnologySubMenu).setOnClickListener(v -> {
+            arcMenu.toggleMenu();
+            if (rocker.rockerState == false) {
+                rocker.rockerViewRight.setVisibility(View.VISIBLE);
+                rocker.rockerViewLeft.setVisibility(View.VISIBLE);
+                buttonExit.setVisibility(View.VISIBLE);
+                arcMenu.setVisibility(View.INVISIBLE);
+                rocker.rockerState = true;
+                rocker.rollVerticalSeekBar.setVisibility(View.VISIBLE);
+                rocker.panVerticalSeekBar.setVisibility(View.VISIBLE);
+                rocker.altitudeVerticalSeekBar.setVisibility(View.VISIBLE);
+                rocker.buttonPitchUp.setVisibility(View.VISIBLE);
+                rocker.buttonPitchDown.setVisibility(View.VISIBLE);
+                Toast.makeText(HuxiActivity.this, "无人机摇杆模拟开始", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void openOnlineScene() {
+        String url = "http://182.61.28.88:8090/iserver/services/3D-releaseDataWorkspace/rest/realspace";
+        SceneServicesList sceneServicesList = new SceneServicesList();
+        boolean loadOk = sceneServicesList.load(url);
+        if (loadOk) {
+            boolean openOk = sceneControl.getScene().open(url, "releaseScene");
+            if (openOk) {
+                Toast.makeText(this, "Ok", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     // 打开一个本地场景
@@ -207,8 +201,8 @@ public class HuxiActivity extends AppCompatActivity {
 
 
     //设置搜索框
-    private void setSearchDialog(String[] listViewItems) {
-        //获取searchdialog并且对类进行初始化
+    private void setSearchDialog() {
+        //获取SearchDialog并且对类进行初始化
         View v = getLayoutInflater().inflate(R.layout.search_dialog, null);
         searchDialog = new SearchDialog(this, 0, 0, v, R.style.DialogTypeTheme);
         searchDialog.setCancelable(true);
@@ -217,9 +211,9 @@ public class HuxiActivity extends AppCompatActivity {
         final ArrayAdapter arrayAdapter;
         //对布局内的控件进行设置
         arrayAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_dropdown_item_1line, listViewItems);
+                android.R.layout.simple_dropdown_item_1line, landmarkComponent.getLandmarkNames());
         listView.setAdapter(arrayAdapter);
-        //listview启动过滤
+        //ListView启动过滤
         listView.setTextFilterEnabled(true);
         //一开始不显示
         listView.setVisibility(View.VISIBLE);
@@ -273,22 +267,6 @@ public class HuxiActivity extends AppCompatActivity {
                 Toast.makeText(HuxiActivity.this, "您已退出测量模式", Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    //展示路线列表框
-    public void showRouteListDialog() {
-        final String[] items3 = new String[]{"Route1", "Route2", "Route3", "Route4"};//创建item
-        //添加列表
-        AlertDialog alertDialog3 = new AlertDialog.Builder(this)
-                .setTitle("选择要浏览的路线")
-                .setItems(items3, (dialogInterface, i) -> {
-                    switch (i) {
-                        case 0:
-                            flyComponent.startOrPauseFly(HuxiActivity.this);
-                    }
-                })
-                .create();
-        alertDialog3.show();
     }
 
     //展示路线列表框
