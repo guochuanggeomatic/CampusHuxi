@@ -35,10 +35,13 @@ import java.util.TimerTask;
  */
 public class FlyStationPopupWindow extends PopupWindow {
     /**
+     * 用来提示信息。
+     */
+    private Activity activity;
+    /**
      * 用来呈现飞行到了那一站，会有提示。
      */
     private ListView flyStationListView;
-
     /**
      * 用来方便在飞行的时候更新状态。
      */
@@ -47,17 +50,12 @@ public class FlyStationPopupWindow extends PopupWindow {
      * 用来追踪数据的状态。
      */
     List<FlyStationItem> flyStations;
-
     /**
-     * 用来提示信息。
+     * 用来完成点击框的弹出介绍。
      */
-    private Activity activity;
+    private IntroduceDialog landmarkIntroduceDialog;
 
     public FlyStationPopupWindow(Activity activity, View contentView, int width, int height) {
-//        super(context);
-//        setContentView(contentView);
-//        setWidth(width);
-//        setHeight(height);
         super(contentView, width, height, false);
         setFocusable(false);
         // 点击外部不能够关闭这个 PopupWindow，前提是focusable: false
@@ -65,6 +63,8 @@ public class FlyStationPopupWindow extends PopupWindow {
         // 透明
         setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         this.activity = activity;
+
+        // 这一段的拓展性不好，需要改动。
         flyStations =  new ArrayList<>();
         // 第一个是起始点，需要亮起来。
         flyStations.add(new FlyStationItem("松园", R.drawable.icon_star));
@@ -81,7 +81,6 @@ public class FlyStationPopupWindow extends PopupWindow {
         flyStationListView.setOnItemClickListener((parent, view, position, id) -> {
             // 点击某一个地方，如果飞到了那儿就停止
         });
-
     }
 
     /**
@@ -114,37 +113,32 @@ public class FlyStationPopupWindow extends PopupWindow {
         flyProgressHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
-                if (flyManager.getStatus() == FlyStatus.PLAY) {
-                    int nextStation = flyManager.getCurrentStopIndex();
-                    Log.d(LandmarkComponent.TAG, "traceFlyStation: size:" + size + " OK nextStation:" + nextStation);
-                    // round-up
-                    nextStation = (nextStation + size) % size;
-                    // 如果下一站发生了改变，那么就图标改变。
-                    if (nextStation != curStationIndex) {
-                        FlyStationItem curFlyStationItem = (FlyStationItem) flyStationItems.getItem(curStationIndex);
-                        curFlyStationItem.setReachableImageId(R.drawable.icon_dark_star);
-
-                        FlyStationItem nextFlyStationItem = (FlyStationItem) flyStationItems.getItem(nextStation);
-                        nextFlyStationItem.setReachableImageId(R.drawable.icon_star);
-
-                        Log.d(LandmarkComponent.TAG, "traceFlyStation: Swapped" + " OK " + nextStation);
-                        // 如果设置在改动的时候，才重新载入，那么影响也没有那么大。
-                        flyStationItems.notifyDataSetChanged();
-                        curStationIndex = nextStation;
+                // 更新站点信息
+                int nextStationIndex = flyManager.getCurrentStopIndex();
+                Log.d(LandmarkComponent.TAG, "handleMessage: size:" + size + " OK nextStation:" + nextStationIndex);
+                // round-up
+                nextStationIndex = (nextStationIndex + size) % size;
+                FlyStatus curFlyStatus = flyManager.getStatus();
+                // 如果是暂停的情况，不需要做什么，更新的情况仅仅是飞行中或者结尾,
+                // 并且精当站点发生改变
+                if (curFlyStatus  != FlyStatus.PAUSE && curStationIndex != nextStationIndex) {
+                    // 到达终点的情况，nextStation 已经更新为 0，所以需要手动改变。
+                    if (curFlyStatus == FlyStatus.STOP) {
+                        nextStationIndex = (curStationIndex + size + 1) % size;
                     }
-                } else if (flyManager.getStatus() == FlyStatus.STOP) {
-                    Log.d("On popup window", "handleMessage:Stop " + curStationIndex);
-                    // 设置终点站为星
                     FlyStationItem curFlyStationItem = (FlyStationItem) flyStationItems.getItem(curStationIndex);
                     curFlyStationItem.setReachableImageId(R.drawable.icon_dark_star);
-                    curStationIndex = (curStationIndex + size + 1) % size;
-                    Log.d("On popup window", "handleMessage:Stop " + curStationIndex);
-                    curFlyStationItem = (FlyStationItem) flyStationItems.getItem(curStationIndex);
-                    curFlyStationItem.setReachableImageId(R.drawable.icon_star);
+                    FlyStationItem nextFlyStationItem = (FlyStationItem) flyStationItems.getItem(nextStationIndex);
+                    nextFlyStationItem.setReachableImageId(R.drawable.icon_star);
+
+                    Log.d(LandmarkComponent.TAG, "handleMessage: Swapped" + " OK " + nextStationIndex);
+                    // 如果设置在改动的时候，才重新载入，那么影响也没有那么大。
+                    flyStationItems.notifyDataSetChanged();
+                    curStationIndex = nextStationIndex;
+                }
+                if (flyManager.getStatus() == FlyStatus.STOP) {
                     // 终止
                     flyStationTimerTask.cancel();
-                } else {
-                    Log.d("On popup window", "handleMessage:Pause " + curStationIndex);
                 }
             }
         };
@@ -185,18 +179,14 @@ public class FlyStationPopupWindow extends PopupWindow {
         /**
          * 这个方法能够配合飞行组件完成飞行站点数据的更新，
          * 代表到了那个站点。
-         * @param stationName
+         * @param reachableImageId
          *      仅仅作为测试，随后应该弄成图片。
          */
-        public void setStationName(String stationName) {
-            this.stationName = stationName;
-        }
-
-        public void setReachableImageId(int reachableImageId) {
+        void setReachableImageId(int reachableImageId) {
             this.reachableImageId = reachableImageId;
         }
 
-        public int getReachableImageId() {
+        int getReachableImageId() {
             return reachableImageId;
         }
     }
