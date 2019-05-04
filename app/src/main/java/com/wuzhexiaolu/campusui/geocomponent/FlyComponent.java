@@ -105,8 +105,7 @@ public class FlyComponent {
             flyManager.pause();
             sceneControl.setAction(Action3D.PANSELECT3D);
         }
-        flyStationPopupWindow.showAsDropDown(
-                activity.findViewById(R.id.anchor_text_view), 0, 0);
+        flyStationPopupWindow.traceFlyStation();
     }
 
     /**
