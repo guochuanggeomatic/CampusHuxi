@@ -34,7 +34,7 @@ public class IntroduceDialog extends Dialog {
     /**
      * 这个文件包含了所有地标的对应的名字，空格后紧跟介绍。
      */
-    private static String landmarkDescriptionFileName = "text.txt";
+    private static final String landmarkDescriptionFileName = "text.txt";
 
     /**
      * 这个 context 是 HuxiActivity，可以在上面进行一系列行为。
@@ -50,7 +50,7 @@ public class IntroduceDialog extends Dialog {
     private HashMap<String, String> landmarkDescriptionMap = new HashMap<>();
 
     @SuppressLint("RtlHardcoded")
-    public IntroduceDialog(Context context) throws IOException {
+    public IntroduceDialog(Context context) {
         super(context, R.style.DialogTypeTheme);
         setContentView(R.layout.site_introduce);
         this.context = context;
@@ -90,19 +90,24 @@ public class IntroduceDialog extends Dialog {
         }
     }
 
-    private void readFile() throws IOException {
-        InputStream inputStream = this.getContext().getAssets().open(landmarkDescriptionFileName);
-        Scanner in = new Scanner(inputStream);
-        // 网友推荐更加简洁的写法
-        while (in.hasNext()) {
-            // 一次读入一行数据
-            String key = in.next();
-            if (!in.hasNext()) {
-                break;
+    /**
+     * 读取后的文件都会用键值<地标名字，描述>对来存入 HashMap.
+     * 如果没有文件，那么 HashMap 就是空的
+     */
+    private void readFile() {
+        try {
+            InputStream inputStream = this.getContext().getAssets().open(landmarkDescriptionFileName);
+            Scanner in = new Scanner(inputStream);
+            while (in.hasNext()) {
+                String key = in.next();
+                if (!in.hasNext()) {
+                    break;
+                }
+                String contents = in.nextLine();
+                landmarkDescriptionMap.put(key, contents);
             }
-            String contents = in.nextLine();
-            landmarkDescriptionMap.put(key, contents);
-            Log.d(LandmarkComponent.TAG, "readFile: " + key + contents);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

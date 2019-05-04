@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             android:imeOptions="flagNoExtractUi"
             app:iconifiedByDefault="false"
-            app:queryHint="请输入搜索内容" /> />
+            app:queryHint="请输入搜索内容" />
 
         <ListView
             android:id="@+id/list_view"

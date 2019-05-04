@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+
+    <ImageView
+        android:id="@+id/dest_station_image_view"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="2dp"
+        android:background="@drawable/icon_dark_star" />
+
+    <TextView
+        android:id="@+id/fly_station_item"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="16dp"
+        android:background="@android:color/transparent"
+        android:text="Station"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+
+        />
+
+</RelativeLayout>

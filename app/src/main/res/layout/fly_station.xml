@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="inherit"
+        android:text="站点："
+        android:background="@android:color/transparent"
+        android:textColor="@color/white"
+        android:textSize="15sp" />
+
+    <ListView
+        android:id="@+id/fly_station_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        />
+
+</LinearLayout>

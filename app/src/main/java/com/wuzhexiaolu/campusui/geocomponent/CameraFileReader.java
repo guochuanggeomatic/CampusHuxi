@@ -12,6 +12,12 @@ class CameraFileReader {
 
     private ArrayList<Camera> cameras = new ArrayList<>();
 
+    /**
+     * @param filename
+     *      保存相机的文件，从中按行读取，一行构造出一个相机对象。
+     * @throws IOException
+     *      如果文件不存在，抛出异常。
+     */
     CameraFileReader(String filename) throws IOException {
         FileInputStream fileInputStream = new FileInputStream(filename);
         Scanner in = new Scanner(fileInputStream);
@@ -22,6 +28,14 @@ class CameraFileReader {
         }
     }
 
+    /**
+     * 把从文件里面读取的每一行数据后，这个方法可以把它转换到相机对象。
+     *
+     * @param record
+     *      从 txt 文件中读取到的每一行 String。
+     * @return
+     *      构建出一个新的相机对象。
+     */
     private Camera parseStringToCamera(String record) {
         AltitudeMode altitudeMode;
         String[] args =  record.split(" ");
