@@ -3,6 +3,7 @@ package com.wuzhexiaolu.campusui;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -36,8 +37,6 @@ public class HuxiActivity extends AppCompatActivity {
     private Workspace workspace;
     private SceneControl sceneControl;
 
-    //view声明
-    private SearchDialog searchDialog;
     private ArcMenu arcMenu;
     private Button buttonExit;
     private TextView result;
@@ -86,11 +85,6 @@ public class HuxiActivity extends AppCompatActivity {
     private void initUIComponent() {
         //设置返回和退出按钮监听器
         setButtonBackAndExitListen();
-        //设置地标搜索框
-        //获取SearchDialog并且对类进行初始化
-        @SuppressLint("InflateParams") View v = getLayoutInflater().inflate(R.layout.search_dialog, null);
-        searchDialog = new SearchDialog(this, v, R.style.DialogTypeTheme);
-        searchDialog.stuffWithLandmark(landmarkComponent);
         //设置菜单
         setMenu();
     }
@@ -108,10 +102,19 @@ public class HuxiActivity extends AppCompatActivity {
             public void onMenuClosed() {
             }
         });
-        findViewById(R.id.searchSubMenu).setOnClickListener(v -> {
+
+        //设置地标搜索框
+        //获取SearchDialog并且对类进行初始化
+        @SuppressLint("InflateParams")
+        View view = getLayoutInflater().inflate(R.layout.search_dialog, null);
+        SearchDialog searchDialog = new SearchDialog(this, view, R.style.DialogTypeTheme);
+        searchDialog.stuffWithLandmark(landmarkComponent);
+        FloatingActionButton landmarkSearchFloatingActionButton = findViewById(R.id.searchSubMenu);
+        landmarkSearchFloatingActionButton.setOnClickListener(v -> {
             searchDialog.show();
             arcMenu.toggleMenu();
         });
+
         // 从飞行组件中获取路径列表，如果没有就会得到空的，diaLog就没有数据。
         AlertDialog flyRouteAlertDialog = new AlertDialog.Builder(HuxiActivity.this)
                 .setTitle("选择要浏览的路线")
@@ -119,16 +122,15 @@ public class HuxiActivity extends AppCompatActivity {
                     flyComponent.startOrPauseFly(i);
                 })
                 .create();
-        findViewById(R.id.showRouteSubMenu).setOnClickListener(v -> {
+        FloatingActionButton flyRouteFloatingActionButton = findViewById(R.id.showRouteSubMenu);
+        flyRouteFloatingActionButton.setOnClickListener(v -> {
             arcMenu.toggleMenu();
             flyRouteAlertDialog.show();
         });
-        findViewById(R.id.functionSubMenu).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                arcMenu.toggleMenu();
-                showMeasureListDialog();
-            }
+
+        findViewById(R.id.functionSubMenu).setOnClickListener(v -> {
+            arcMenu.toggleMenu();
+            showMeasureListDialog();
         });
         findViewById(R.id.advanceTechnologySubMenu).setOnClickListener(v -> {
             arcMenu.toggleMenu();

@@ -2,6 +2,7 @@ package com.wuzhexiaolu.campusui.geocomponent;
 
 import android.app.Activity;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.supermap.realspace.Action3D;
@@ -10,6 +11,7 @@ import com.supermap.realspace.FlyStatus;
 import com.supermap.realspace.Routes;
 import com.supermap.realspace.SceneControl;
 import com.wuzhexiaolu.campusui.R;
+import com.wuzhexiaolu.campusui.ui.FlyStationPopupWindow;
 
 import java.util.ArrayList;
 
@@ -47,11 +49,7 @@ public class FlyComponent {
      * 比如，wujing.fpf中就有：学习路线，参观路线。
      */
     private ArrayList<String> flyRouteNames = new ArrayList<>();
-    /**
-     * 追踪飞行的状态，用来管理飞行进度，飞行事件。
-     */
-    private FlyStatus curFlyStatus = FlyStatus.STOP;
-    private FlyStatus preFlyStatus = FlyStatus.STOP;
+    private FlyStationPopupWindow flyStationPopupWindow;
 
     /**
      * @param activity
@@ -68,10 +66,6 @@ public class FlyComponent {
 
         flyManager = sceneControl.getScene().getFlyManager();
         routes = flyManager.getRoutes();
-        flyManager.addStatusChangedListener(statusChangedEvent -> {
-            curFlyStatus = statusChangedEvent.getCurrentStatus();
-            preFlyStatus = statusChangedEvent.getPreStatus();
-        });
         boolean hasRoutes = routes.fromFile(flyRouteFilePath);
         if (hasRoutes) {
             int numRoutes = routes.getCount();
@@ -81,6 +75,8 @@ public class FlyComponent {
         } else {
             Toast.makeText(activity, "飞行路线文件信息空白", Toast.LENGTH_SHORT).show();
         }
+        View view = activity.getLayoutInflater().inflate(R.layout.fly_station,null);
+        flyStationPopupWindow = new FlyStationPopupWindow(activity, view, 300, 500);
     }
 
     /**
@@ -94,15 +90,12 @@ public class FlyComponent {
         if (curRouteIndex != position) {
             // stop 需要在设置路径之前？
             if (flyManager.getStatus() != FlyStatus.STOP) {
+                // 需要注意：
                 // 执行 stop 之后，routes 会被清空，需要再次读取。
                 flyManager.stop();
                 routes.clear();
                 routes.fromFile(flyRouteFilePath);
             }
-            int tmp = routes.getCount();
-            // The index begin as 1, not 0 ?
-            // 这个方法太不稳定了，总是崩溃掉 IndexOutOfBoundsException: setCurrentRouteIndex
-            // 设置不同了就会崩溃
             routes.setCurrentRoute(position);
         }
         if (flyManager.getStatus() != FlyStatus.PLAY) {
@@ -112,13 +105,15 @@ public class FlyComponent {
             flyManager.pause();
             sceneControl.setAction(Action3D.PANSELECT3D);
         }
+        flyStationPopupWindow.showAsDropDown(
+                activity.findViewById(R.id.anchor_text_view), 0, 0);
     }
 
     /**
      * 停止飞行。
      */
     public void stop() {
-        if (curFlyStatus != FlyStatus.STOP) {
+        if (flyManager.getStatus() != FlyStatus.STOP) {
             flyManager.stop();
             sceneControl.setAction(Action3D.PANSELECT3D);
         } else {

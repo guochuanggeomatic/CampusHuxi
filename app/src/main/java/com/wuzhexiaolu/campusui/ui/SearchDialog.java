@@ -77,12 +77,4 @@ public class SearchDialog extends Dialog {
             }
         });
     }
-
-    public ListView getListView() {
-        return listView;
-    }
-
-    public SearchView getSearchView() {
-        return searchView;
-    }
 }

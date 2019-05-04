@@ -56,19 +56,14 @@ public class LandmarkComponent implements GestureDetector.OnGestureListener {
      * 控制一个Detector.
      *
      * @param context
-     *      需要接管地标管理的那个活动。
+     *      需要接管地标管理的那个 Activity。
      */
     public LandmarkComponent(HuxiActivity context) {
         super();
         this.context = context;
         this.sceneControl = context.findViewById(R.id.sceneControl);
         loadFeaturesFromFile();
-        try {
-            introduceDialog = new IntroduceDialog(context);
-        } catch (IOException e) {
-            Toast.makeText(context, "地标文件描述文件打开失败", Toast.LENGTH_SHORT).show();
-            introduceDialog = null;
-        }
+        introduceDialog = new IntroduceDialog(context);
         GestureDetector gestureDetector = new GestureDetector(context, this);
         sceneControl.setGestureDetector(gestureDetector);
     }
