@@ -38,15 +38,20 @@ public class FlyStationPopupWindow extends PopupWindow {
      * 用来呈现飞行到了那一站，会有提示。
      */
     private ListView flyStationListView;
-    /**
-     * 用来提示信息。
-     */
-    private Activity activity;
 
     /**
      * 用来方便在飞行的时候更新状态。
      */
     private ArrayAdapter flyStationItems;
+    /**
+     * 用来追踪数据的状态。
+     */
+    List<FlyStationItem> flyStations;
+
+    /**
+     * 用来提示信息。
+     */
+    private Activity activity;
 
     public FlyStationPopupWindow(Activity activity, View contentView, int width, int height) {
 //        super(context);
@@ -60,8 +65,9 @@ public class FlyStationPopupWindow extends PopupWindow {
         // 透明
         setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         this.activity = activity;
-        List<FlyStationItem> flyStations =  new ArrayList<>();
-        flyStations.add(new FlyStationItem("松园", R.drawable.icon_dark_star));
+        flyStations =  new ArrayList<>();
+        // 第一个是起始点，需要亮起来。
+        flyStations.add(new FlyStationItem("松园", R.drawable.icon_star));
         flyStations.add(new FlyStationItem("二食堂", R.drawable.icon_dark_star));
         flyStations.add(new FlyStationItem("综合楼", R.drawable.icon_dark_star));
         flyStations.add(new FlyStationItem("第一教学楼", R.drawable.icon_dark_star));
@@ -75,28 +81,22 @@ public class FlyStationPopupWindow extends PopupWindow {
         flyStationListView.setOnItemClickListener((parent, view, position, id) -> {
             // 点击某一个地方，如果飞到了那儿就停止
         });
-    }
 
-    /**
-     * 在 lambda 内部直接写，好像不能够 work。需要封装一下？
-     * @param flyStationItem
-     * @param resId
-     */
-    private void changeIcon(FlyStationItem flyStationItem, int resId, String text) {
-        flyStationItem.setReachableImageId(resId);
-        flyStationItem.setStationName(text);
     }
-
-    /**
-     * 用来停止 Handler.
-     */
-    private Handler stopHandler = new Handler();
 
     /**
      * 因为在 lambda 内部使用，不得不创建对象。
      * 为了追寻上一站
      */
-    private int curStation = 0;
+    private int curStationIndex = 0;
+
+    /**
+     * 管理飞行状态变化的三个组合拳。
+     */
+    private TimerTask flyStationTimerTask;
+    // Handler是安卓的
+    private Handler flyProgressHandler;
+    private Timer flyStationTimer = new Timer();
 
     /**
      * 展现这个框，并且在飞行开始的时候，刷新下一站为黄星。
@@ -106,69 +106,58 @@ public class FlyStationPopupWindow extends PopupWindow {
         showAsDropDown(activity.findViewById(R.id.anchor_text_view), 0, 0);
         SceneControl sceneControl = activity.findViewById(R.id.sceneControl);
         Scene scene = sceneControl.getScene();
-
-        TimerTask flyStationTimerTask;
         FlyManager flyManager = scene.getFlyManager();
         // 执行，使用Timer线程来查看飞行的状态。
-        Timer flyProgressTimer = new Timer();
+        flyStationItems.setNotifyOnChange(true);
+        int size = flyStationItems.getCount();
 
-        Runnable tryToSetNextStation = () -> {
-            int size = flyStationItems.getCount();
-            if (flyManager.getStatus() == FlyStatus.PLAY) {
-                int nextStation = flyManager.getCurrentStopIndex();
-                Log.d(LandmarkComponent.TAG, "traceFlyStation: " + "OK " + nextStation);
-                // round-up
-                nextStation = (nextStation + size) % size;
-                // 如果下一站发生了改变，那么就图标改变。
-                if (nextStation != curStation) {
-                    FlyStationItem curFlyStationItem = (FlyStationItem) flyStationItems.getItem(curStation);
-//                    curFlyStationItem.setReachableImageId(R.drawable.icon_dark_star);
-                    changeIcon(curFlyStationItem, R.drawable.icon_dark_star, "Gone");
-
-                    FlyStationItem nextFlyStationItem = (FlyStationItem) flyStationItems.getItem(nextStation);
-//                    nextFlyStationItem.setReachableImageId(R.drawable.icon_star);
-                    changeIcon(nextFlyStationItem, R.drawable.icon_star, "Coming");
-
-                    Log.d(LandmarkComponent.TAG, "traceFlyStation: Swapped" + "OK " + nextStation);
-
-                    curStation = nextStation;
-                }
-            } else if (flyManager.getStatus() == FlyStatus.STOP) {
-                // 如果停止了，那就终止
-                stopHandler.sendEmptyMessage(0);
-                // 终止
-//                flyStationTimerTask.cancel();
-            }
-        };
-
-        @SuppressLint("HandlerLeak")
-        Handler flyProgressHandler = new Handler();
-        stopHandler = new Handler(){
+        flyProgressHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
-                switch (msg.what) {
-                    case 0:
-                        flyProgressHandler.removeCallbacks(tryToSetNextStation);
-                        break;
-                    default:
-                        break;
+                if (flyManager.getStatus() == FlyStatus.PLAY) {
+                    int nextStation = flyManager.getCurrentStopIndex();
+                    Log.d(LandmarkComponent.TAG, "traceFlyStation: size:" + size + " OK nextStation:" + nextStation);
+                    // round-up
+                    nextStation = (nextStation + size) % size;
+                    // 如果下一站发生了改变，那么就图标改变。
+                    if (nextStation != curStationIndex) {
+                        FlyStationItem curFlyStationItem = (FlyStationItem) flyStationItems.getItem(curStationIndex);
+                        curFlyStationItem.setReachableImageId(R.drawable.icon_dark_star);
+
+                        FlyStationItem nextFlyStationItem = (FlyStationItem) flyStationItems.getItem(nextStation);
+                        nextFlyStationItem.setReachableImageId(R.drawable.icon_star);
+
+                        Log.d(LandmarkComponent.TAG, "traceFlyStation: Swapped" + " OK " + nextStation);
+                        // 如果设置在改动的时候，才重新载入，那么影响也没有那么大。
+                        flyStationItems.notifyDataSetChanged();
+                        curStationIndex = nextStation;
+                    }
+                } else if (flyManager.getStatus() == FlyStatus.STOP) {
+                    Log.d("On popup window", "handleMessage:Stop " + curStationIndex);
+                    // 设置终点站为星
+                    FlyStationItem curFlyStationItem = (FlyStationItem) flyStationItems.getItem(curStationIndex);
+                    curFlyStationItem.setReachableImageId(R.drawable.icon_dark_star);
+                    curStationIndex = (curStationIndex + size + 1) % size;
+                    Log.d("On popup window", "handleMessage:Stop " + curStationIndex);
+                    curFlyStationItem = (FlyStationItem) flyStationItems.getItem(curStationIndex);
+                    curFlyStationItem.setReachableImageId(R.drawable.icon_star);
+                    // 终止
+                    flyStationTimerTask.cancel();
+                } else {
+                    Log.d("On popup window", "handleMessage:Pause " + curStationIndex);
                 }
-                super.handleMessage(msg);
             }
         };
-
         flyStationTimerTask = new TimerTask() {
 
             @Override
             public void run() {
-//                flyProgressHandler.sendEmptyMessage(0);
-                flyProgressHandler.post(tryToSetNextStation);
+                flyProgressHandler.sendEmptyMessage(0);
             }
         };
         // milliseconds
-        flyProgressTimer.schedule(flyStationTimerTask, 500, 10);
+        flyStationTimer .schedule(flyStationTimerTask, 500, 10);
     }
-
 
     /**
      * 用来当做 flyStationListView 的填充。
