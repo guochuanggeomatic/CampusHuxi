@@ -76,13 +76,6 @@ public class HuxiActivity extends AppCompatActivity {
             Button resetCameraButton = findViewById(R.id.reset_camera_button);
             resetCameraButton.setOnClickListener(v -> sceneControl.getScene().setCamera(originalCamera));
         });
-        AssetManager assetManager = getResources().getAssets();
-        try {
-            String[] files = assetManager.list("text.txt");
-            Log.d(LandmarkComponent.TAG, "onCreate: " + Arrays.toString(files));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private void initFunctionComponent() {
@@ -144,7 +137,7 @@ public class HuxiActivity extends AppCompatActivity {
         AlertDialog flyRouteAlertDialog = new AlertDialog.Builder(HuxiActivity.this)
                 .setTitle("选择要浏览的路线")
                 .setItems(flyComponent.getRouteNames(), (dialogInterface, i) -> {
-                    flyComponent.startOrPauseFly(i);
+                    flyComponent.doPauseOrFly(i);
                 })
                 .create();
         FloatingActionButton flyRouteFloatingActionButton = findViewById(R.id.showRouteSubMenu);

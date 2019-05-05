@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.sa90.materialarcmenu.ArcMenu;
 import com.supermap.realspace.Action3D;
 import com.supermap.realspace.FlyManager;
 import com.supermap.realspace.FlyStatus;
@@ -26,8 +27,9 @@ import static com.wuzhexiaolu.campusui.geocomponent.LandmarkComponent.TAG;
 
 /**
  * 飞行相关操作管理类，操控着飞行文件的打开、飞行相关行为的管理。
+ * 实现接口，方便调用，解耦。
  */
-public class FlyComponent {
+public class FlyComponent implements Flyable {
     /**
      * 用来重新打开飞行文件的时候当做参考。
      */
@@ -54,6 +56,11 @@ public class FlyComponent {
      */
     private ArrayList<String> flyRouteNames = new ArrayList<>();
     private FlyStationPopupWindow flyStationPopupWindow;
+    /**
+     * 保存当前的正在飞行的路线索引。在 PopupWindow 调用 stop 之后，可以马上重新加载对应的文件，
+     * 并且设置为当前值。可以重新飞行。
+     */
+    private int curRouteIndex = -1;
 
     /**
      * @param activity
@@ -81,87 +88,108 @@ public class FlyComponent {
             Toast.makeText(activity, "飞行路线文件信息空白", Toast.LENGTH_SHORT).show();
         }
         View view = activity.getLayoutInflater().inflate(R.layout.fly_station,null);
-        flyStationPopupWindow = new FlyStationPopupWindow(activity, view, 300, 500, landmarkIntroduceDialog);
+        flyStationPopupWindow = new FlyStationPopupWindow(this, activity, view, 300, 500, landmarkIntroduceDialog);
     }
 
     /**
      * 如果当前正在飞行状态，那么就暂停。然后重新开始飞行。
      * 如果加载的是空文件，或者没有飞行路线，那么选择空中也就没有 item。
+     *
+     * 选择了路线后，隐藏菜单，这样就可以避免了飞行途中，重新打开新的飞行路径。
+     * 这种行为将会导致飞行路线文件的重读，需要交给方法 {@link #resetFlying()}处理。
+     * 保证安全性。
+     * 等待飞行停止在重新打开。
+     *
+     * 主要管理飞行路线，飞行站点有 PopupWindow 搞定。
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public void startOrPauseFly(int position) {
+    public void doPauseOrFly(int position) {
         // 如果返回 -1，代表没有文件，那么尝试重新读取。如果还是 -1 就什么也不做。
-        int curRouteIndex = routes.getCurrentRouteIndex();
+        curRouteIndex = routes.getCurrentRouteIndex();
         // 如果没有文件，或者改变了状态
         if (curRouteIndex == -1) {
             routes.clear();
             routes.fromFile(flyRouteFilePath);
         }
         curRouteIndex = routes.getCurrentRouteIndex();
-        if (curRouteIndex == -1) {
+        // 不可能找到路径，当然，大于等于的情况是不可能出现的，
+        // 因为读取的文件获得的飞行路线总是根据相同的数量呈现在对话框。
+        // 但是防止用户期间弄坏了文件。
+        if (curRouteIndex == -1 || position >= routes.getCount()) {
+            // 不显示飞行站点、控制框，不执行飞行动作，直接退出
             return ;
         }
-        // 选择了不同的路线，先停止（stop）然后在重新启动
+        // 这两句总能够正确执行
+        ArcMenu arcMenu = activity.findViewById(R.id.arcMenu);
+        arcMenu.setVisibility(View.INVISIBLE);
+        // 选择了不同的路线，先停止设置好
         if (curRouteIndex != position) {
-            // stop 需要在设置路径之前？
-            if (flyManager.getStatus() != FlyStatus.STOP) {
-                // 需要注意：
-                // 执行 stop 之后，routes 会被清空，需要再次读取。
-                flyManager.stop();
-                routes.clear();
-                routes.fromFile(flyRouteFilePath);
-            }
+            Log.d(TAG, "startOrPauseFly: change index!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             routes.setCurrentRoute(position);
+            curRouteIndex = position;
         }
-        Log.d(TAG, "startOrPauseFly: " + position + " " + flyRouteNames.get(position));
+        Log.d(TAG, "startOrPauseFly: pos " + position + " name " + flyRouteNames.get(position) + " cur " + curRouteIndex);
+
+        // 上面的代码为检查，执行过一次之后，这儿总可以正常运行。
+        flyOrPause();
+    }
+
+    /**
+     * 这个方法用来真正执行飞行或者暂停，需要一些检查作为前提。
+     * 这个方法也是作为接口的实现，然后将会由 GUI 在暂停和飞行上再次调用。
+     */
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    @Override
+    public void flyOrPause() {
         if (flyManager.getStatus() == FlyStatus.STOP) {
             sceneControl.setAction(Action3D.PAN3D);
             flyManager.play();
             // 只在启动的时候，开始监听。
-            flyStationPopupWindow.traceFlyStation(flyRouteNames.get(position));
+            flyStationPopupWindow.traceFlyStation(flyRouteNames.get(curRouteIndex));
+            Log.d(TAG, "flyOrPause: " + flyRouteNames.get(curRouteIndex));
         } else if (flyManager.getStatus() == FlyStatus.PAUSE){
             flyManager.play();
         } else {
-            // STOP
+            // 飞行的时候，就暂停
             sceneControl.setAction(Action3D.PANSELECT3D);
             flyManager.pause();
         }
     }
 
     /**
-     * 停止飞行。
+     * 停止飞行。然后菜单重现，PopupWindow 消失。
+     * {@code routes.getCurrentIndex()} 将会返回 -1，然后下次再次飞行的时候，
+     * 重新读取文件，尤其是 flyOrPause 方法。
      */
-    public void stop() {
-        if (flyManager.getStatus() != FlyStatus.STOP) {
-            flyManager.stop();
-            sceneControl.setAction(Action3D.PANSELECT3D);
-        } else {
-            Toast.makeText(activity, "没有正在飞行", Toast.LENGTH_SHORT).show();
-        }
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    @Override
+    public void resetFlying() {
+        stopAndResetCurrentRoute();
+        // 飞行后马上停止，即切换视角。没有更好的方式来实现了。
+        flyOrPause();
+        flyOrPause();
     }
 
     /**
-     * 追踪飞行符的进度，然后对飞行提醒控件作出调整。
+     * 用来退出飞行，让界面消失，恢复主菜单。
      */
-    private void traceProgress() {
-
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    @Override
+    public void exitFlying() {
+        stopAndResetCurrentRoute();
+        ArcMenu arcMenu = activity.findViewById(R.id.arcMenu);
+        arcMenu.setVisibility(View.VISIBLE);
+        flyStationPopupWindow.dismiss();
     }
 
     /**
-     * 从{@code flyRouteNames}中选择第 position 条飞行路线，准备下次飞行。
-     * @param position
-     *      相应的第几条路线。如果超出了，那么就会默认第一条。
+     * 这段代码在 {@link #resetFlying()} 和 {@link #exitFlying()} 中冗余，先提取出来。
      */
-    private void setRouteToFly(int position) {
-        routes.setCurrentRoute(position);
-        // ?
-        sceneControl.setAction(Action3D.PAN3D);
-        flyManager.play();
-//        refreashFlyProgress();
-//        isFlying = true;
-//        dismiss();
-//        isPopFlyShowing = true;
-
+    private void stopAndResetCurrentRoute() {
+        flyManager.stop();
+        routes.clear();
+        routes.fromFile(flyRouteFilePath);
+        routes.setCurrentRoute(curRouteIndex);
     }
 
     /**
