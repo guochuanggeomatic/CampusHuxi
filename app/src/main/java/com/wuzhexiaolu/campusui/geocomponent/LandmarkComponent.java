@@ -7,6 +7,7 @@ import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.MotionEvent;
 
 import com.supermap.realspace.Camera;
@@ -96,6 +97,7 @@ public class LandmarkComponent implements GestureDetector.OnGestureListener {
         }
 
         if (nearPoint != null && landmarkIntroduceDialog != null) {
+            landmarkIntroduceDialog.setLayoutGravity(Gravity.LEFT);
             landmarkIntroduceDialog.show(nearPoint.getName());
         }
     }
@@ -138,12 +140,13 @@ public class LandmarkComponent implements GestureDetector.OnGestureListener {
      */
     private void loadFeaturesFromFile() {
         openOrCreateFile();
+        Scene scene = sceneControl.getScene();
         // 从 kml 中添加
-        Layer3Ds layer3Ds = sceneControl.getScene().getLayers();
+        Layer3Ds layer3Ds = scene.getLayers();
         // 这一行文件不在会抛出错误吗，如果文件不再，那么就读取空文件。
         // 镇压住
         layer3Ds.addLayerWith(layerKMlPath, Layer3DType.KML, true, layerName);
-        Layer3D layer3d = sceneControl.getScene().getLayers().get(layerName);
+        Layer3D layer3d = scene.getLayers().get(layerName);
         if (layer3d != null) {
             Feature3Ds feature3Ds = layer3d.getFeatures();
             Feature3D[] feature3DArray = feature3Ds.getFeatureArray(Feature3DSearchOption.ALLFEATURES);

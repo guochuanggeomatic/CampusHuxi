@@ -18,6 +18,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.wuzhexiaolu.campusui.R;
 import com.wuzhexiaolu.campusui.geocomponent.LandmarkComponent;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -27,6 +28,8 @@ import java.util.Scanner;
  * 这个类与需要介绍地标的类组合使用。
  * 这个类能够弹出介绍对话框。内容为：
  *      标题，图片/GIF，描述。
+ *
+ * 这个类作为依赖注入，注入到 {@link com.wuzhexiaolu.campusui.geocomponent.LandmarkComponent} 和 {@link com.wuzhexiaolu.campusui.geocomponent.FlyComponent}中。
  */
 public class IntroductionDialog extends Dialog {
     /**
@@ -50,7 +53,7 @@ public class IntroductionDialog extends Dialog {
     @SuppressLint("RtlHardcoded")
     public IntroductionDialog(Context context) {
         super(context, R.style.DialogTypeTheme);
-        setContentView(R.layout.site_introduce);
+        setContentView(R.layout.land_introduction);
         this.context = context;
         setLayoutGravity(Gravity.LEFT);
         readFile();
@@ -106,7 +109,8 @@ public class IntroductionDialog extends Dialog {
                 if (!in.hasNext()) {
                     break;
                 }
-                String contents = in.nextLine();
+                // 在文首加上制表符，让格式更好看
+                String contents = "\t\t" + in.nextLine();
                 landmarkDescriptionMap.put(key, contents);
             }
         } catch (IOException e) {

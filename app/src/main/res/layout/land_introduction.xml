@@ -21,10 +21,10 @@
             android:layout_gravity="center"
             android:textSize="30dp" />
 
-    <ImageView
+        <ImageView
             android:id="@+id/gif_image_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="170dp"
             android:src="@drawable/test" />
     <TextView
             android:id="@+id/introduce_head"

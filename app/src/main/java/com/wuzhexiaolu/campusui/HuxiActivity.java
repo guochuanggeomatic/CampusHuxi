@@ -2,12 +2,14 @@ package com.wuzhexiaolu.campusui;
 
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
+import android.content.res.AssetManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -30,6 +32,10 @@ import com.wuzhexiaolu.campusui.ui.*;
 import com.wuzhexiaolu.campusui.function.Measure;
 import com.wuzhexiaolu.campusui.geocomponent.FlyComponent;
 import com.wuzhexiaolu.campusui.geocomponent.LandmarkComponent;
+
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.Arrays;
 
 
 public class HuxiActivity extends AppCompatActivity {
@@ -70,6 +76,13 @@ public class HuxiActivity extends AppCompatActivity {
             Button resetCameraButton = findViewById(R.id.reset_camera_button);
             resetCameraButton.setOnClickListener(v -> sceneControl.getScene().setCamera(originalCamera));
         });
+        AssetManager assetManager = getResources().getAssets();
+        try {
+            String[] files = assetManager.list("text.txt");
+            Log.d(LandmarkComponent.TAG, "onCreate: " + Arrays.toString(files));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void initFunctionComponent() {
