@@ -2,7 +2,9 @@ package com.wuzhexiaolu.campusui;
 
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +21,7 @@ import com.supermap.data.Workspace;
 import com.supermap.data.WorkspaceConnectionInfo;
 import com.supermap.data.WorkspaceType;
 import com.supermap.realspace.Action3D;
+import com.supermap.realspace.Camera;
 import com.supermap.realspace.Scene;
 import com.supermap.realspace.SceneControl;
 import com.supermap.realspace.SceneServicesList;
@@ -40,6 +43,8 @@ public class HuxiActivity extends AppCompatActivity {
     private ArcMenu arcMenu;
     private Button buttonExit;
     private TextView result;
+    // 初始视角
+    private Camera originalCamera;
 
     //测量功能
     private Measure measure;
@@ -49,6 +54,7 @@ public class HuxiActivity extends AppCompatActivity {
     private FlyComponent flyComponent;
     private LandmarkComponent landmarkComponent;
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,6 +66,9 @@ public class HuxiActivity extends AppCompatActivity {
             initUIComponent();
             initFunctionComponent();
             findViewById(R.id.full_screen_image_campus_d).setVisibility(View.GONE);
+            originalCamera = sceneControl.getScene().getCamera();
+            Button resetCameraButton = findViewById(R.id.reset_camera_button);
+            resetCameraButton.setOnClickListener(v -> sceneControl.getScene().setCamera(originalCamera));
         });
     }
 
@@ -76,12 +85,14 @@ public class HuxiActivity extends AppCompatActivity {
             return;
         }
         openLocalScene();
-        flyComponent = new FlyComponent(this, flyRoutePathName);
+        IntroductionDialog landIntroduceDialog = new IntroductionDialog(this);
+        flyComponent = new FlyComponent(this, flyRoutePathName, landIntroduceDialog);
         // 场景浏览
-        landmarkComponent = new LandmarkComponent(this);
+        landmarkComponent = new LandmarkComponent(this, landIntroduceDialog);
     }
 
     //初始化超图场景
+    @RequiresApi(api = Build.VERSION_CODES.N)
     private void initUIComponent() {
         //设置返回和退出按钮监听器
         setButtonBackAndExitListen();
@@ -90,6 +101,7 @@ public class HuxiActivity extends AppCompatActivity {
     }
 
     //设置按钮
+    @RequiresApi(api = Build.VERSION_CODES.N)
     private void setMenu() {
         arcMenu = findViewById(R.id.arcMenu);
         arcMenu.setRadius(getResources().getDimension(R.dimen.radius));

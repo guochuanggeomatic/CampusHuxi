@@ -1,16 +1,16 @@
 package com.wuzhexiaolu.campusui.geocomponent;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.graphics.Point;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.widget.Toast;
 
 import com.supermap.realspace.Camera;
 import com.supermap.realspace.Scene;
-import com.wuzhexiaolu.campusui.HuxiActivity;
 import com.wuzhexiaolu.campusui.R;
 import com.supermap.data.Point3D;
 import com.supermap.realspace.Feature3D;
@@ -21,7 +21,7 @@ import com.supermap.realspace.Layer3DType;
 import com.supermap.realspace.Layer3Ds;
 import com.supermap.realspace.PixelToGlobeMode;
 import com.supermap.realspace.SceneControl;
-import com.wuzhexiaolu.campusui.ui.IntroduceDialog;
+import com.wuzhexiaolu.campusui.ui.IntroductionDialog;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,14 +39,12 @@ public class LandmarkComponent implements GestureDetector.OnGestureListener {
     private static final String layerKMlPath = rootPath + "/SuperMap/initKML/default.kml";
     private static final String cameraPath = rootPath + "/SuperMap/initKML/camera.txt";
 
-    private HuxiActivity context;
     private SceneControl sceneControl;
 
     /**
-     * 这个 IntroduceDialog 能够接受{@code String landmarkname}作为参数，
-     * 然后弹出相应介绍框。
+     * @see com.wuzhexiaolu.campusui.ui.IntroductionDialog
      */
-    private IntroduceDialog introduceDialog;
+    private IntroductionDialog landmarkIntroduceDialog;
 
     private ArrayList<LandFeature> landFeatures= new ArrayList<>();
 
@@ -57,13 +55,14 @@ public class LandmarkComponent implements GestureDetector.OnGestureListener {
      *
      * @param context
      *      需要接管地标管理的那个 Activity。
+     * @param landmarkIntroduceDialog
+     *      介绍对话框。
      */
-    public LandmarkComponent(HuxiActivity context) {
+    public LandmarkComponent(Activity context, IntroductionDialog landmarkIntroduceDialog) {
         super();
-        this.context = context;
         this.sceneControl = context.findViewById(R.id.sceneControl);
         loadFeaturesFromFile();
-        introduceDialog = new IntroduceDialog(context);
+        this.landmarkIntroduceDialog = landmarkIntroduceDialog;
         GestureDetector gestureDetector = new GestureDetector(context, this);
         sceneControl.setGestureDetector(gestureDetector);
     }
@@ -77,8 +76,9 @@ public class LandmarkComponent implements GestureDetector.OnGestureListener {
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void nearByLandmark(Point point) {
-        Point3D point3D = sceneControl.getScene().pixelToGlobe(point, PixelToGlobeMode.TERRAINANDMODEL);
-        double minDistance = LandmarkComponent.radius;
+        Scene scene = sceneControl.getScene();
+        Point3D point3D = scene.pixelToGlobe(point, PixelToGlobeMode.TERRAINANDMODEL);
+        double minDistance = radius;
         Feature3D nearPoint = null;
         // Find the nearest landmark of the point, and record it.
         for (int i = 0; i < landFeatures.size(); i++) {
@@ -95,10 +95,8 @@ public class LandmarkComponent implements GestureDetector.OnGestureListener {
             }
         }
 
-        if (nearPoint != null && introduceDialog != null) {
-            introduceDialog.show(nearPoint.getName());
-        } else {
-            Toast.makeText(context, "附近没有地标" , Toast.LENGTH_SHORT).show();
+        if (nearPoint != null && landmarkIntroduceDialog != null) {
+            landmarkIntroduceDialog.show(nearPoint.getName());
         }
     }
 
@@ -133,7 +131,6 @@ public class LandmarkComponent implements GestureDetector.OnGestureListener {
                 return ;
             }
         }
-        Toast.makeText(context, layerKMlPath + ".kml 文件中并没有这个地标", Toast.LENGTH_LONG).show();
     }
 
     /**
@@ -166,17 +163,15 @@ public class LandmarkComponent implements GestureDetector.OnGestureListener {
     /**
      * 根据文件名生成文件，存储 kml 文件的信息。
      *
-     * TODO 感觉是不需要这一行。只需要读。如果没有文件，报错。
-     *
      * @return
      */
     private void openOrCreateFile() {
         try {
-            File file = new File(LandmarkComponent.layerKMlPath);
+            File file = new File(layerKMlPath);
             if (!file.exists()) {
                 boolean createdOk= file.createNewFile();
                 String msg = createdOk ? "成功" : "失败";
-                Toast.makeText(context, "没有用地标文件！创建出新的空文件" + msg, Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "openOrCreateFile: " + "没有空间，创建文件" + msg );
             }
         } catch (Exception e) {
             e.printStackTrace();
