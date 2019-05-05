@@ -88,7 +88,7 @@ public class FlyComponent implements Flyable {
             Toast.makeText(activity, "飞行路线文件信息空白", Toast.LENGTH_SHORT).show();
         }
         View view = activity.getLayoutInflater().inflate(R.layout.fly_station,null);
-        flyStationPopupWindow = new FlyStationPopupWindow(this, activity, view, 300, 500, landmarkIntroduceDialog);
+        flyStationPopupWindow = new FlyStationPopupWindow(this, activity, view, 300, 550, landmarkIntroduceDialog);
     }
 
     /**

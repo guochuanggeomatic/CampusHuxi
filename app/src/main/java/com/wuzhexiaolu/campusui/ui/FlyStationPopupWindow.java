@@ -118,16 +118,16 @@ public class FlyStationPopupWindow extends PopupWindow {
             FlyStatus curStatus = flyManager.getStatus();
             // 这个类能够加载，代表文件已经加载完成了。只需要在复杂的 stop操作。
             if (curStatus == FlyStatus.PLAY) {
-                pausePlayButton.setBackgroundResource(R.drawable.fly_play);
+                pausePlayButton.setBackgroundResource(R.drawable.button_fly_play);
             } else {
-                pausePlayButton.setBackgroundResource(R.drawable.fly_pause);
+                pausePlayButton.setBackgroundResource(R.drawable.button_fly_pause);
             }
             flyable.flyOrPause();
         });
         Button resetFlyingButton = flyStationView.findViewById(R.id.fly_stop_button);
         resetFlyingButton.setOnClickListener(v -> {
             flyable.resetFlying();
-            pausePlayButton.setBackgroundResource(R.drawable.fly_play);
+            pausePlayButton.setBackgroundResource(R.drawable.button_fly_play);
             // 还需要重新设置起点五角星
             if (curFlyStationsAdpater != null && !curFlyStationsAdpater.isEmpty()) {
                 FlyStationItem startStation = curFlyStationsAdpater.getItem(0);
@@ -143,15 +143,15 @@ public class FlyStationPopupWindow extends PopupWindow {
         exitFlyingButton.setOnClickListener(v -> {
             flyable.exitFlying();
             // 推出的时候设置为暂停 icon，方便下次开始飞行的时候，暂停图标的显示
-            pausePlayButton.setBackgroundResource(R.drawable.fly_pause);
+            pausePlayButton.setBackgroundResource(R.drawable.button_fly_pause);
         });
-        initArrayAdapterData();
+        stuffArrayAdapterData();
     }
 
     /**
      * 填充飞行站点的数据。
      */
-    private void initArrayAdapterData() {
+    private void stuffArrayAdapterData() {
         List<FlyStationItem> learningRoute =  new ArrayList<>();
         // 第一个是起始点，需要亮起来。
         learningRoute.add(new FlyStationItem("松园", R.drawable.current_station_star));

@@ -27,24 +27,21 @@
             android:id="@+id/pause_play_button"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:background="@drawable/fly_pause"
+            android:background="@drawable/button_fly_pause"
             />
 
         <Button
             android:id="@+id/fly_stop_button"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:background="@drawable/fly_stop"
+            android:background="@drawable/button_fly_reset"
             />
 
         <Button
             android:id="@+id/fly_exit_button"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:text="X"
-            android:textSize="18sp"
-            android:textColor="@android:color/white"
-            android:background="@android:color/transparent"
+            android:background="@drawable/button_fly_exit"
             />
         
     </LinearLayout>
