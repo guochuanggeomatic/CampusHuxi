@@ -1,14 +1,19 @@
 package com.wuzhexiaolu.campusui.ui;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
+import android.graphics.PixelFormat;
 import android.support.v7.widget.SearchView;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.wuzhexiaolu.campusui.R;
 import com.wuzhexiaolu.campusui.geocomponent.LandmarkComponent;
@@ -29,12 +34,14 @@ public class SearchDialog extends Dialog {
         super(context, style);
         setContentView(layout);
         this.context = context;
-        listView = (ListView) findViewById(R.id.list_view);
-        searchView = (SearchView) findViewById(R.id.search_view);
+        listView = findViewById(R.id.list_view);
+        searchView = findViewById(R.id.search_view);
 
         Window window = getWindow();
         assert window != null;
         WindowManager.LayoutParams params = window.getAttributes();
+        params.format = PixelFormat.TRANSLUCENT;
+        params.alpha = 0.75F;
         params.gravity = Gravity.CENTER;
         window.setAttributes(params);
 
@@ -47,8 +54,20 @@ public class SearchDialog extends Dialog {
      */
     public void stuffWithLandmark(LandmarkComponent landmarkComponent) {
         //对布局内的控件进行设置
-        final ArrayAdapter arrayAdapter = new ArrayAdapter<>(context,
-                android.R.layout.simple_dropdown_item_1line, landmarkComponent.getLandmarkNames());
+//        final ArrayAdapter arrayAdapter = new ArrayAdapter<String>(context,
+//                android.R.layout.simple_dropdown_item_1line, landmarkComponent.getLandmarkNames());
+        final ArrayAdapter arrayAdapter = new ArrayAdapter<String>(context,
+            R.layout.menu_item, landmarkComponent.getLandmarkNames()) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                String hint = getItem(position);
+                @SuppressLint("ViewHolder")
+                View view = LayoutInflater.from(getContext()).inflate(R.layout.menu_item, parent, false);
+                TextView menuItem = view.findViewById(R.id.menu_item_text_view);
+                menuItem.setText(hint);
+                return view;
+            }
+        };
         listView.setAdapter(arrayAdapter);
         //ListView启动过滤
         listView.setTextFilterEnabled(true);

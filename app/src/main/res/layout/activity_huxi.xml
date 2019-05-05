@@ -29,28 +29,48 @@
         android:layout_marginRight="30dp"
         android:background="@android:drawable/ic_menu_close_clear_cancel"
         android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/reset_camera_button"
+        android:layout_width="60dp"
+        android:layout_height="32dp"
+        android:layout_alignEnd="@+id/button_exit"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="69dp"
+        android:layout_marginEnd="-30dp"
+        android:background="@android:color/transparent"
+        android:text="初始视角"
+        android:textColor="@color/white"
+        android:textSize="10dp" />
+
     <com.sa90.materialarcmenu.ArcMenu
         android:id="@+id/arcMenu"
         android:layout_width="100dp"
-        android:layout_height="60dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_gravity="bottom|end"
         app:menu_open="arc_left"
         app:menu_scr="@android:drawable/ic_dialog_dialer"
+        app:menu_color="@color/lightBlue"
+        app:menu_ripple_color="@color/lakeBlue"
         >
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/searchSubMenu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/landmark_search"
+            app:backgroundTint="@color/lightBlue"
+            app:rippleColor="@color/lakeBlue"
             />
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/showRouteSubMenu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/fly_route"
+            android:src="@drawable/recommendation_route"
+            app:backgroundTint="@color/lightBlue"
+            app:rippleColor="@color/lakeBlue"
             />
 
         <android.support.design.widget.FloatingActionButton
@@ -58,6 +78,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/measurement"
+            app:backgroundTint="@color/lightBlue"
+            app:rippleColor="@color/lakeBlue"
             />
 
         <android.support.design.widget.FloatingActionButton
@@ -65,6 +87,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/uav"
+            app:backgroundTint="@color/lightBlue"
+            app:rippleColor="@color/lakeBlue"
             />
 
     </com.sa90.materialarcmenu.ArcMenu>
@@ -101,6 +125,7 @@
         android:layout_marginLeft="0dp"
         android:visibility="invisible"
         />
+
     <com.wuzhexiaolu.campusui.ui.VerticalSeekBar
         android:id="@+id/altitudeVerticalSeekBar"
         android:layout_width="40dp"
@@ -153,8 +178,10 @@
         android:id="@+id/full_screen_image_campus_d"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
         android:background="@drawable/campus1"
-        android:visibility="invisible"/>
+        android:visibility="invisible" />
 
     <!--用来定位 PopupWindow 的位置-->
     <TextView

@@ -12,10 +12,10 @@
         android:layout_alignParentTop="true"
         android:layout_marginStart="0dp"
         android:layout_marginTop="2dp"
-        android:background="@drawable/icon_dark_star" />
+        android:background="@drawable/other_station_dark_star" />
 
     <TextView
-        android:id="@+id/fly_station_item"
+        android:id="@+id/fly_station_item_text_view"
         android:layout_width="match_parent"
         android:layout_height="20dp"
         android:layout_alignParentStart="true"
@@ -25,7 +25,7 @@
         android:text="Station"
         android:textAlignment="center"
         android:textColor="@color/white"
-        android:textSize="15sp"
+        android:textSize="15dp"
 
         />
 

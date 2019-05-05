@@ -7,8 +7,15 @@
     <color name="black">#000000</color>
     <color name="orange">#ff7f00</color>
     <color name="pink">#f08080</color>
-    <color name="blue">#3498db</color>
+    <color name="blue">#353B99</color>
     <color name="red">#db3434</color>
     <color name="green">#11b900</color>
     <color name="yellow">#ffff00</color>
+    <color name="lightBlue">#409184</color>
+    <color name="lakeBlue">#8690CA</color>
+    <color name="arcMenuBlue">#537EA7</color>
+    <color name="grayTransparent">#25000000</color>
+    <color name="upperGrayTransparent">#81000000</color>
+
+    <drawable name="grayTransparent">#17000000</drawable>
 </resources>
