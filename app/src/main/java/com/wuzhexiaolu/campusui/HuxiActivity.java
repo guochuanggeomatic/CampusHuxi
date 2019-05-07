@@ -1,6 +1,7 @@
 package com.wuzhexiaolu.campusui;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
@@ -9,6 +10,8 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -132,10 +135,9 @@ public class HuxiActivity extends AppCompatActivity {
         // 从飞行组件中获取路径列表，如果没有就会得到空的，diaLog就没有数据。
         AlertDialog flyRouteAlertDialog = new AlertDialog.Builder(HuxiActivity.this)
                 .setTitle("选择要浏览的路线")
-                .setItems(flyComponent.getRouteNames(), (dialogInterface, i) -> {
-                    flyComponent.doPauseOrFly(i);
-                })
+                .setItems(flyComponent.getRouteNames(), (dialogInterface, i) -> flyComponent.doPauseOrFly(i))
                 .create();
+        setDialogTransparent(flyRouteAlertDialog);
         FloatingActionButton flyRouteFloatingActionButton = findViewById(R.id.showRouteSubMenu);
         flyRouteFloatingActionButton.setOnClickListener(v -> {
             arcMenu.toggleMenu();
@@ -162,6 +164,20 @@ public class HuxiActivity extends AppCompatActivity {
                 Toast.makeText(HuxiActivity.this, "无人机摇杆模拟开始", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    /**
+     * 设置按钮透明度为 0.8
+     * @param dialog
+     */
+    private void setDialogTransparent(Dialog dialog) {
+        // 设置透明度
+        Window window = dialog.getWindow();
+        assert window != null;
+        WindowManager.LayoutParams lp = window.getAttributes();
+        lp.alpha = 0.75f;
+        window.setAttributes(lp);
+
     }
 
     private void openOnlineScene() {
@@ -248,34 +264,33 @@ public class HuxiActivity extends AppCompatActivity {
     //展示路线列表框
     public void showMeasureListDialog() {
         final String[] items3 = new String[]{"距离计算", "面积计算"};//创建item
+        //添加列表
         AlertDialog alertDialog3 = new AlertDialog.Builder(this)
                 .setTitle("功能选择")
-                .setItems(items3, new DialogInterface.OnClickListener() {//添加列表
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        if (measure.functionState == false) {
-                            measure.functionState = true;
-                            result.setVisibility(View.VISIBLE);
-                            viewStateChange();
-                            Toast.makeText(HuxiActivity.this, "您已进入测量模式", Toast.LENGTH_SHORT).show();
-                            switch (i) {
-                                case 0:
-                                    measure.closeAnalysis();
-                                    measure.AnalysisTypeArea = 0;
-                                    measure.startMeasureAnalysis();
-                                    break;
-                                case 1:
-                                    measure.closeAnalysis();
-                                    measure.AnalysisTypeArea = 1;
-                                    measure.startSurearea();
-                                    break;
-                                default:
-                                    break;
-                            }
+                .setItems(items3, (dialogInterface, i) -> {
+                    if (measure.functionState == false) {
+                        measure.functionState = true;
+                        result.setVisibility(View.VISIBLE);
+                        viewStateChange();
+                        Toast.makeText(HuxiActivity.this, "您已进入测量模式", Toast.LENGTH_SHORT).show();
+                        switch (i) {
+                            case 0:
+                                measure.closeAnalysis();
+                                measure.AnalysisTypeArea = 0;
+                                measure.startMeasureAnalysis();
+                                break;
+                            case 1:
+                                measure.closeAnalysis();
+                                measure.AnalysisTypeArea = 1;
+                                measure.startSurearea();
+                                break;
+                            default:
+                                break;
                         }
                     }
                 })
                 .create();
+        setDialogTransparent(alertDialog3);
         alertDialog3.show();
     }
 
