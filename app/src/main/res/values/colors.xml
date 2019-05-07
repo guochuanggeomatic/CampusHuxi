@@ -16,6 +16,7 @@
     <color name="arcMenuBlue">#537EA7</color>
     <color name="grayTransparent">#25000000</color>
     <color name="upperGrayTransparent">#81000000</color>
+    <color name="backgroundTransparent">#D9FFFFFF</color>
 
     <drawable name="grayTransparent">#17000000</drawable>
 </resources>
