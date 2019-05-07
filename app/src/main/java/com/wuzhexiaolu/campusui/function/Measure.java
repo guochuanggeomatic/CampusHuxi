@@ -16,12 +16,9 @@ import com.supermap.realspace.Tracking3DListener;
 import com.wuzhexiaolu.campusui.HuxiActivity;
 import com.wuzhexiaolu.campusui.R;
 
-/**
- * 测量功能模块。
- */
 public class Measure {
 
-    private HuxiActivity huxiActivity;
+    private Activity activity;
     private SceneControl sceneControl;
     private TextView result;
 
@@ -33,12 +30,10 @@ public class Measure {
      */
     public boolean functionState = false;
 
-    private boolean readyToMeasure = false;
-
-    public Measure(HuxiActivity huxiActivity){
-        this.huxiActivity = huxiActivity;
-        this.result = huxiActivity.findViewById(R.id.measureResult);
-        this.sceneControl = huxiActivity.findViewById(R.id.sceneControl);
+    public Measure(Activity activity){
+        this.activity = activity;
+        this.result = activity.findViewById(R.id.measureResult);
+        this.sceneControl = activity.findViewById(R.id.sceneControl);
         totalLengthHandler = new MeasureHandler();
         Tracking3DListener mTracking3dListener = event -> initAnalysis(sceneControl, event);
         sceneControl.addTrackingListener(mTracking3dListener);
@@ -84,8 +79,7 @@ public class Measure {
         result.setVisibility(View.INVISIBLE);
         sceneControl.setAction(Action3D.PANSELECT3D);
         functionState = false;
-        Toast.makeText(huxiActivity, "您已退出测量模式", Toast.LENGTH_SHORT).show();
-        huxiActivity.changeExitAndArcMenuButtonState();
+        Toast.makeText(activity, "您已退出测量模式", Toast.LENGTH_SHORT).show();
     }
 
     private void initAnalysis(SceneControl sceneControl, Tracking3DEvent event) {

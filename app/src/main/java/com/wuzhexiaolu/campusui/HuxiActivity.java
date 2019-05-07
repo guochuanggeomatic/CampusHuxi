@@ -242,7 +242,6 @@ public class HuxiActivity extends AppCompatActivity {
                 rocker.rockerViewLeft.setVisibility(View.GONE);
                 rocker.rockerViewRight.setVisibility(View.GONE);
                 rocker.rockerState = false;
-                changeExitAndArcMenuButtonState();
                 rocker.rollVerticalSeekBar.setVisibility(View.GONE);
                 rocker.panVerticalSeekBar.setVisibility(View.GONE);
                 rocker.altitudeVerticalSeekBar.setVisibility(View.GONE);
@@ -255,6 +254,8 @@ public class HuxiActivity extends AppCompatActivity {
                 measure.exitMeasurement();
                 Toast.makeText(HuxiActivity.this, "您已退出测量模式", Toast.LENGTH_SHORT).show();
             }
+            changeExitAndArcMenuButtonState();
+            arcMenu.setVisibility(View.VISIBLE);
         });
     }
 
@@ -290,16 +291,14 @@ public class HuxiActivity extends AppCompatActivity {
      * 关注退出按钮的状态。
      * 在退出的时候，让 arcMenu 设置可见，退出按钮不可见。
      * 在进入功能的时候，让 arcMenu 设置不可见，退出按钮可见。
-     *
-     * 使用 public 是为了让 View 能够和这个进行交互。
      */
-    public void changeExitAndArcMenuButtonState() {
-        if (buttonExit.getVisibility() == View.VISIBLE && arcMenu.getVisibility() == View.INVISIBLE) {
-            buttonExit.setVisibility(View.INVISIBLE);
-            arcMenu.setVisibility(View.VISIBLE);
-        } else {
+    private void changeExitAndArcMenuButtonState() {
+        if (arcMenu.getVisibility() != View.INVISIBLE) {
             buttonExit.setVisibility(View.VISIBLE);
             arcMenu.setVisibility(View.INVISIBLE);
+        } else {
+            buttonExit.setVisibility(View.INVISIBLE);
+            arcMenu.setVisibility(View.VISIBLE);
         }
     }
 }
