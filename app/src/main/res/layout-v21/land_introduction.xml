@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="300dp"
+    android:layout_height="300dp"
+    android:backgroundTint="@color/backgroundTransparent"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/site_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="地点名称"
+            android:textAlignment="center"
+            android:textColor="@color/colorPrimary"
+            android:layout_gravity="center"
+            android:textSize="30dp" />
+
+        <ImageView
+            android:id="@+id/gif_image_view"
+            android:layout_width="290dp"
+            android:layout_height="170dp"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:src="@drawable/test" />
+    <TextView
+            android:id="@+id/introduce_head"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:text="简要介绍" />
+
+    <TextView
+            android:id="@+id/introduce_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+
+    </LinearLayout>
+
+</ScrollView>

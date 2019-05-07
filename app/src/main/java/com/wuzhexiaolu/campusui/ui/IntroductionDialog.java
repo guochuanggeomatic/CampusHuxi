@@ -18,7 +18,6 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.wuzhexiaolu.campusui.R;
 import com.wuzhexiaolu.campusui.geocomponent.LandmarkComponent;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -49,14 +48,17 @@ public class IntroductionDialog extends Dialog {
      * 使用的时候，需要更具地标名来获取对应的信息。
      */
     private HashMap<String, String> landmarkDescriptionMap = new HashMap<>();
+    private HashMap<String, Integer> landmarkImageInfoMap = new HashMap<>();
 
     @SuppressLint("RtlHardcoded")
     public IntroductionDialog(Context context) {
         super(context, R.style.DialogTypeTheme);
         setContentView(R.layout.land_introduction);
         this.context = context;
+        // 默认的情况
         setLayoutGravity(Gravity.LEFT);
         readFile();
+        stuffGifAndImages();
     }
 
     /**
@@ -82,8 +84,7 @@ public class IntroductionDialog extends Dialog {
         ImageView imageView = findViewById(R.id.gif_image_view);
         if (imageView != null) {
             Glide.with(context)
-                    .load(R.drawable.test)
-                    .asGif()
+                    .load(landmarkImageInfoMap.getOrDefault(landmarkName, R.drawable.campus1))
                     .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                     .into(imageView);
             TextView siteIntroduceTextView = findViewById(R.id.introduce_content);
@@ -98,7 +99,7 @@ public class IntroductionDialog extends Dialog {
 
     /**
      * 读取后的文件都会用键值<地标名字，描述>对来存入 HashMap.
-     * 如果没有文件，那么 HashMap 就是空的
+     * 如果没有文件，那么 HashMap 就是空的。
      */
     private void readFile() {
         try {
@@ -116,5 +117,24 @@ public class IntroductionDialog extends Dialog {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 手动添加 gif 或者普通图片资源。
+     */
+    private void stuffGifAndImages() {
+        landmarkImageInfoMap.put("松园", R.drawable.introduction_pine_dorm);
+        landmarkImageInfoMap.put("第一教学楼", R.drawable.introduction_first_teaching_building);
+        landmarkImageInfoMap.put("综合楼", R.drawable.introduction_multiusage_building);
+        landmarkImageInfoMap.put("一食堂", R.drawable.introduction_dining_1);
+        landmarkImageInfoMap.put("二食堂", R.drawable.introduction_dining_2);
+        landmarkImageInfoMap.put("三食堂", R.drawable.introduction_dining_3);
+        landmarkImageInfoMap.put("大北门", R.drawable.introduction_formal_north_gate);
+        landmarkImageInfoMap.put("小北门", R.drawable.introduction_informal_north_gate);
+        landmarkImageInfoMap.put("银杏大道", R.drawable.introduction_ginkgo_avenue);
+        landmarkImageInfoMap.put("图书馆", R.drawable.introduction_library);
+        landmarkImageInfoMap.put("缙湖", R.drawable.introduction_lake_jin);
+        landmarkImageInfoMap.put("云湖", R.drawable.introduction_lake_yun);
+        landmarkImageInfoMap.put("荷花池", R.drawable.introduction_lotus_pond);
     }
 }

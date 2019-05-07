@@ -1,64 +1,91 @@
 package com.wuzhexiaolu.campusui.function;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.supermap.data.GeoPoint3D;
-import com.supermap.data.GeoStyle3D;
-import com.supermap.data.Point3D;
 import com.supermap.realspace.Action3D;
-import com.supermap.realspace.Scene;
 import com.supermap.realspace.SceneControl;
-import com.supermap.realspace.Sightline;
 import com.supermap.realspace.Tracking3DEvent;
 import com.supermap.realspace.Tracking3DListener;
+import com.wuzhexiaolu.campusui.HuxiActivity;
+import com.wuzhexiaolu.campusui.R;
 
 public class Measure {
 
+    private Activity activity;
     private SceneControl sceneControl;
     private TextView result;
 
-    private Sightline sightline;
     private Handler totalLengthHandler;
 
-    public int AnalysisTypeArea = 1;
+    private int AnalysisTypeArea = 1;
+    /**
+     *
+     */
     public boolean functionState = false;
 
-    public Measure(TextView result,SceneControl sceneControl){
-        this.result = result;
-        this.sceneControl = sceneControl;
+    public Measure(Activity activity){
+        this.activity = activity;
+        this.result = activity.findViewById(R.id.measureResult);
+        this.sceneControl = activity.findViewById(R.id.sceneControl);
         totalLengthHandler = new MeasureHandler();
+        Tracking3DListener mTracking3dListener = event -> initAnalysis(sceneControl, event);
         sceneControl.addTrackingListener(mTracking3dListener);
     }
 
-    public void startMeasureAnalysis() {
+    /**
+     * 距离测量，单击地面上的各点，获得结果显示在在文本框。
+     */
+    public void doDistanceMeasurement() {
+        showAllViews();
+        closeAnalysis();
+        AnalysisTypeArea = 0;
         sceneControl.setAction(Action3D.MEASUREDISTANCE3D);
     }
 
-    public void startSurearea() {
+    /**
+     * 面积测量，点击地面上的点，获得面积。
+     */
+    public void doAreaMeasurement() {
+        showAllViews();
+        closeAnalysis();
+        AnalysisTypeArea = 1;
         sceneControl.setAction(Action3D.MEASUREAREA3D);
-
     }
 
-    public void closeAnalysis() {
+    private void closeAnalysis() {
         sceneControl.setAction(Action3D.PANSELECT3D);
         result.setText("");
     }
 
-    private Tracking3DListener mTracking3dListener = new Tracking3DListener() {
+    /**
+     * 显示组件。
+     */
+    private void showAllViews(){
+        functionState = true;
+        result.setVisibility(View.VISIBLE);
+    }
 
-        @Override
-        public void tracking(Tracking3DEvent event) {
+    /**
+     * 退出，清理界面。
+     */
+    public void exitMeasurement() {
+        result.setVisibility(View.INVISIBLE);
+        sceneControl.setAction(Action3D.PANSELECT3D);
+        functionState = false;
+        Toast.makeText(activity, "您已退出测量模式", Toast.LENGTH_SHORT).show();
+    }
 
-            initAnalySis(sceneControl, event);
+    private void initAnalysis(SceneControl sceneControl, Tracking3DEvent event) {
 
-        }
-    };
-
-    public void initAnalySis(SceneControl sceneControl, Tracking3DEvent event) {
-
+        /*
+        因为 sightLine 总是为 null，没有初始化，所以不执行。
         if (sightline != null && sceneControl.getAction() == Action3D.CREATEPOINT3D) {
 
             Point3D p3D = new Point3D(event.getX(), event.getY(), event.getZ());
@@ -80,10 +107,11 @@ public class Measure {
                 sceneControl.getScene().getTrackingLayer().add(geoPoint3D, "point");
             }
 
-        } else if (sceneControl.getAction() == Action3D.MEASUREDISTANCE3D) {
+        } else */
+        if (sceneControl.getAction() == Action3D.MEASUREDISTANCE3D) {
             measureDistance(event);
         } else if (sceneControl.getAction() == Action3D.MEASUREAREA3D) {
-            measureSurearea(event);
+            measureSelectedRegionArea(event);
         }
     }
 
@@ -97,7 +125,7 @@ public class Measure {
         totalLengthHandler.sendMessage(msg);
     }
 
-    private void measureSurearea(Tracking3DEvent event) {
+    private void measureSelectedRegionArea(Tracking3DEvent event) {
         double TotalArea = event.getTotalArea();
         Message msg = new Message();
         Bundle bundle = new Bundle();
@@ -106,24 +134,19 @@ public class Measure {
         totalLengthHandler.sendMessage(msg);
     }
 
-    class MeasureHandler extends Handler {
+    @SuppressLint("HandlerLeak")
+    private class MeasureHandler extends Handler {
 
         @Override
         public void handleMessage(Message msg) {
-
             if (AnalysisTypeArea == 0) {
-                double msgLength;
-
-                msgLength = Math.round(msg.getData().getDouble("length"));
-
+                double msgLength = Math.round(msg.getData().getDouble("length"));
                 if (msgLength < 1000) {
                     result.setText(" 距离 " + msgLength + " 米");
                 } else {
                     result.setText(" 距离 " + Math.round(msgLength / 1000) + "公里");
                 }
-
             } else if (AnalysisTypeArea == 1) {
-
                 double msgLength = Math.round(msg.getData().getDouble("Area"));
                 if (msgLength < 1000000) {
                     result.setText(" 面积 " + msgLength + " 平方米");

@@ -172,7 +172,9 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="20dp"
-        android:text='' />
+        android:textColor="@color/black"
+        android:textSize="30dp"
+        />
 
     <ImageView
         android:id="@+id/full_screen_image_campus_d"
