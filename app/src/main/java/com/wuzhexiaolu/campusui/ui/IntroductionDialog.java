@@ -123,13 +123,18 @@ public class IntroductionDialog extends Dialog {
      * 手动添加 gif 或者普通图片资源。
      */
     private void stuffGifAndImages() {
+        landmarkImageInfoMap.put("松园", R.drawable.introduction_pine_dorm);
         landmarkImageInfoMap.put("第一教学楼", R.drawable.introduction_first_teaching_building);
+        landmarkImageInfoMap.put("综合楼", R.drawable.introduction_multiusage_building);
         landmarkImageInfoMap.put("一食堂", R.drawable.introduction_dining_1);
         landmarkImageInfoMap.put("二食堂", R.drawable.introduction_dining_2);
-        landmarkImageInfoMap.put("综合楼", R.drawable.introduction_multiusage_building);
+        landmarkImageInfoMap.put("三食堂", R.drawable.introduction_dining_3);
         landmarkImageInfoMap.put("大北门", R.drawable.introduction_formal_north_gate);
         landmarkImageInfoMap.put("小北门", R.drawable.introduction_informal_north_gate);
+        landmarkImageInfoMap.put("银杏大道", R.drawable.introduction_ginkgo_avenue);
         landmarkImageInfoMap.put("图书馆", R.drawable.introduction_library);
         landmarkImageInfoMap.put("缙湖", R.drawable.introduction_lake_jin);
+        landmarkImageInfoMap.put("云湖", R.drawable.introduction_lake_yun);
+        landmarkImageInfoMap.put("荷花池", R.drawable.introduction_lotus_pond);
     }
 }

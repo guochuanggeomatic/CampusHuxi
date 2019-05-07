@@ -254,7 +254,7 @@ public class HuxiActivity extends AppCompatActivity {
                 measure.exitMeasurement();
                 Toast.makeText(HuxiActivity.this, "您已退出测量模式", Toast.LENGTH_SHORT).show();
             }
-            changeExitAndArcMenuButtonState();
+            buttonExit.setVisibility(View.INVISIBLE);
             arcMenu.setVisibility(View.VISIBLE);
         });
     }
@@ -267,7 +267,8 @@ public class HuxiActivity extends AppCompatActivity {
                 .setTitle("功能选择")
                 .setItems(items3, (dialogInterface, i) -> {
                     if (!measure.functionState) {
-                        changeExitAndArcMenuButtonState();
+                        buttonExit.setVisibility(View.VISIBLE);
+                        arcMenu.setVisibility(View.INVISIBLE);
                         Toast.makeText(HuxiActivity.this, "您已进入测量模式", Toast.LENGTH_SHORT).show();
                         switch (i) {
                             case 0:
@@ -284,21 +285,5 @@ public class HuxiActivity extends AppCompatActivity {
                 .create();
         setDialogTransparent(alertDialog3);
         alertDialog3.show();
-    }
-
-
-    /**
-     * 关注退出按钮的状态。
-     * 在退出的时候，让 arcMenu 设置可见，退出按钮不可见。
-     * 在进入功能的时候，让 arcMenu 设置不可见，退出按钮可见。
-     */
-    private void changeExitAndArcMenuButtonState() {
-        if (arcMenu.getVisibility() != View.INVISIBLE) {
-            buttonExit.setVisibility(View.VISIBLE);
-            arcMenu.setVisibility(View.INVISIBLE);
-        } else {
-            buttonExit.setVisibility(View.INVISIBLE);
-            arcMenu.setVisibility(View.VISIBLE);
-        }
     }
 }

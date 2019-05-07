@@ -39,6 +39,7 @@ import static com.wuzhexiaolu.campusui.geocomponent.LandmarkComponent.TAG;
 /**
  * 和飞行组件关系密切，并且它的内容和状态也会由飞行状态改变。
  * 这个 UI 不会保存数据，数据需要 caller 提供。
+ * 这个类直接保存着各个地标的描述信息。
  */
 public class FlyStationPopupWindow extends PopupWindow {
     /**
@@ -48,7 +49,7 @@ public class FlyStationPopupWindow extends PopupWindow {
     /**
      * 用来在重新设置按钮处更新状态。
      */
-    FlyStationAdapter curFlyStationsAdpater;
+    private FlyStationAdapter curFlyStationsAdapter;
     /**
      * 用来完成点击框的弹出介绍。
      */
@@ -129,14 +130,14 @@ public class FlyStationPopupWindow extends PopupWindow {
             flyable.resetFlying();
             pausePlayButton.setBackgroundResource(R.drawable.button_fly_play);
             // 还需要重新设置起点五角星
-            if (curFlyStationsAdpater != null && !curFlyStationsAdpater.isEmpty()) {
-                FlyStationItem startStation = curFlyStationsAdpater.getItem(0);
+            if (curFlyStationsAdapter != null && !curFlyStationsAdapter.isEmpty()) {
+                FlyStationItem startStation = curFlyStationsAdapter.getItem(0);
                 startStation.setReachableImageId(R.drawable.current_station_star);
-                for (int i = 1; i < curFlyStationsAdpater.getCount(); i++) {
-                    FlyStationItem otherStation = curFlyStationsAdpater.getItem(i);
+                for (int i = 1; i < curFlyStationsAdapter.getCount(); i++) {
+                    FlyStationItem otherStation = curFlyStationsAdapter.getItem(i);
                     otherStation.setReachableImageId(R.drawable.other_station_dark_star);
                 }
-                curFlyStationsAdpater.setNotifyOnChange(true);
+                curFlyStationsAdapter.setNotifyOnChange(true);
             }
         });
         Button exitFlyingButton = flyStationView.findViewById(R.id.fly_exit_button);
@@ -183,16 +184,16 @@ public class FlyStationPopupWindow extends PopupWindow {
     @RequiresApi(api = Build.VERSION_CODES.N)
     @SuppressLint("HandlerLeak")
     public void traceFlyStation(String routeName) {
-        curFlyStationsAdpater = stationAdapterHashMap.getOrDefault(routeName, null);
-        if (curFlyStationsAdpater == null) {
+        curFlyStationsAdapter = stationAdapterHashMap.getOrDefault(routeName, null);
+        if (curFlyStationsAdapter == null) {
             Log.d(TAG, "traceFlyStation: No route " + routeName);
             return;
         }
-        this.curFlyStationsAdpater = curFlyStationsAdpater;
+        this.curFlyStationsAdapter = curFlyStationsAdapter;
         TextView anchorTextView = activity.findViewById(R.id.anchor_text_view);
         showAsDropDown(anchorTextView, 0, 0);
         ListView stationListView = flyStationView.findViewById(R.id.fly_station_list_view);
-        stationListView.setAdapter(curFlyStationsAdpater);
+        stationListView.setAdapter(curFlyStationsAdapter);
         stationListView.setOnItemClickListener((parent, view, position, id) -> {
             // 最后是否恢复飞行状态，取决于是否打断了飞行。使用变量来记录方便些。
             boolean isFlying = flyManager.getStatus() == FlyStatus.PLAY;
@@ -208,7 +209,7 @@ public class FlyStationPopupWindow extends PopupWindow {
                 // 避免重新开始飞行，让他什么都不做
                 landmarkIntroduceDialog.setOnDismissListener((dialog) -> {});
             }
-            FlyStationItem clickedItem = curFlyStationsAdpater.getItem(position);
+            FlyStationItem clickedItem = curFlyStationsAdapter.getItem(position);
             assert clickedItem != null;
             landmarkIntroduceDialog.setLayoutGravity(Gravity.CENTER);
             landmarkIntroduceDialog.show(clickedItem.getStationName());
@@ -216,8 +217,8 @@ public class FlyStationPopupWindow extends PopupWindow {
         TextView titleTextView = flyStationView.findViewById(R.id.route_name_text_view);
         titleTextView.setText(routeName);
         // 执行，使用Timer线程来查看飞行的状态。
-        curFlyStationsAdpater.setNotifyOnChange(true);
-        int size = curFlyStationsAdpater.getCount();
+        curFlyStationsAdapter.setNotifyOnChange(true);
+        int size = curFlyStationsAdapter.getCount();
         flyProgressHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
@@ -240,14 +241,14 @@ public class FlyStationPopupWindow extends PopupWindow {
                         // 终止发出监听器。
                         flyStationTimerTask.cancel();
                     }
-                    FlyStationItem curFlyStationItem = curFlyStationsAdpater.getItem(curStationIndex);
+                    FlyStationItem curFlyStationItem = curFlyStationsAdapter.getItem(curStationIndex);
                     assert curFlyStationItem != null;
                     curFlyStationItem.setReachableImageId(R.drawable.other_station_dark_star);
-                    FlyStationItem nextFlyStationItem = curFlyStationsAdpater.getItem(nextStationIndex);
+                    FlyStationItem nextFlyStationItem = curFlyStationsAdapter.getItem(nextStationIndex);
                     assert nextFlyStationItem != null;
                     nextFlyStationItem.setReachableImageId(R.drawable.current_station_star);
                     // 如果设置在改动的时候，才重新载入，那么影响也没有那么大。
-                    curFlyStationsAdpater.notifyDataSetChanged();
+                    curFlyStationsAdapter.notifyDataSetChanged();
                     curStationIndex = nextStationIndex;
                 }
             }
