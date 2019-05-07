@@ -21,8 +21,10 @@
 
         <ImageView
             android:id="@+id/gif_image_view"
-            android:layout_width="match_parent"
+            android:layout_width="290dp"
             android:layout_height="170dp"
+            android:gravity="center"
+            android:layout_gravity="center"
             android:src="@drawable/test" />
     <TextView
             android:id="@+id/introduce_head"
