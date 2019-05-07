@@ -1,51 +1,98 @@
 package com.wuzhexiaolu.campusui.function;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.supermap.realspace.Action3D;
 import com.supermap.realspace.SceneControl;
 import com.supermap.realspace.Tracking3DEvent;
 import com.supermap.realspace.Tracking3DListener;
+import com.wuzhexiaolu.campusui.HuxiActivity;
+import com.wuzhexiaolu.campusui.R;
 
+/**
+ * 测量功能模块。
+ */
 public class Measure {
 
+    private HuxiActivity huxiActivity;
     private SceneControl sceneControl;
     private TextView result;
 
     private Handler totalLengthHandler;
 
-    public int AnalysisTypeArea = 1;
+    private int AnalysisTypeArea = 1;
+    /**
+     *
+     */
     public boolean functionState = false;
 
-    public Measure(TextView result,SceneControl sceneControl){
-        this.result = result;
-        this.sceneControl = sceneControl;
+    private boolean readyToMeasure = false;
+
+    public Measure(HuxiActivity huxiActivity){
+        this.huxiActivity = huxiActivity;
+        this.result = huxiActivity.findViewById(R.id.measureResult);
+        this.sceneControl = huxiActivity.findViewById(R.id.sceneControl);
         totalLengthHandler = new MeasureHandler();
         Tracking3DListener mTracking3dListener = event -> initAnalysis(sceneControl, event);
         sceneControl.addTrackingListener(mTracking3dListener);
     }
 
-    public void startMeasureAnalysis() {
+    /**
+     * 距离测量，单击地面上的各点，获得结果显示在在文本框。
+     */
+    public void doDistanceMeasurement() {
+        showAllViews();
+        closeAnalysis();
+        AnalysisTypeArea = 0;
         sceneControl.setAction(Action3D.MEASUREDISTANCE3D);
     }
 
-    public void selectRegion() {
+    /**
+     * 面积测量，点击地面上的点，获得面积。
+     */
+    public void doAreaMeasurement() {
+        showAllViews();
+        closeAnalysis();
+        AnalysisTypeArea = 1;
         sceneControl.setAction(Action3D.MEASUREAREA3D);
-
     }
 
-    public void closeAnalysis() {
+    private void closeAnalysis() {
         sceneControl.setAction(Action3D.PANSELECT3D);
         result.setText("");
     }
 
+    /**
+     * 显示组件。
+     */
+    private void showAllViews(){
+        functionState = true;
+        result.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * 退出，清理界面。
+     */
+    public void exitMeasurement() {
+        result.setVisibility(View.INVISIBLE);
+        sceneControl.setAction(Action3D.PANSELECT3D);
+        functionState = false;
+        Toast.makeText(huxiActivity, "您已退出测量模式", Toast.LENGTH_SHORT).show();
+        huxiActivity.changeExitAndArcMenuButtonState();
+    }
+
     private void initAnalysis(SceneControl sceneControl, Tracking3DEvent event) {
 
-/*        if (sightline != null && sceneControl.getAction() == Action3D.CREATEPOINT3D) {
+        /*
+        因为 sightLine 总是为 null，没有初始化，所以不执行。
+        if (sightline != null && sceneControl.getAction() == Action3D.CREATEPOINT3D) {
 
             Point3D p3D = new Point3D(event.getX(), event.getY(), event.getZ());
 
@@ -98,20 +145,14 @@ public class Measure {
 
         @Override
         public void handleMessage(Message msg) {
-
             if (AnalysisTypeArea == 0) {
-                double msgLength;
-
-                msgLength = Math.round(msg.getData().getDouble("length"));
-
+                double msgLength = Math.round(msg.getData().getDouble("length"));
                 if (msgLength < 1000) {
                     result.setText(" 距离 " + msgLength + " 米");
                 } else {
                     result.setText(" 距离 " + Math.round(msgLength / 1000) + "公里");
                 }
-
             } else if (AnalysisTypeArea == 1) {
-
                 double msgLength = Math.round(msg.getData().getDouble("Area"));
                 if (msgLength < 1000000) {
                     result.setText(" 面积 " + msgLength + " 平方米");

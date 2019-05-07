@@ -44,7 +44,6 @@ public class HuxiActivity extends AppCompatActivity {
 
     private ArcMenu arcMenu;
     private Button buttonExit;
-    private TextView result;
     // 初始视角
     private Camera originalCamera;
 
@@ -77,8 +76,7 @@ public class HuxiActivity extends AppCompatActivity {
     private void initFunctionComponent() {
         rocker = new Rocker(sceneControl, this);
         //设置功能
-        result = (TextView) findViewById(R.id.measureResult);
-        measure = new Measure(result, sceneControl);
+        measure = new Measure(this);
     }
 
     private void initGeoComponent() {
@@ -145,6 +143,7 @@ public class HuxiActivity extends AppCompatActivity {
             arcMenu.toggleMenu();
             showMeasureListDialog();
         });
+        // 应该 RAII
         findViewById(R.id.advanceTechnologySubMenu).setOnClickListener(v -> {
             arcMenu.toggleMenu();
             if (rocker.rockerState == false) {
@@ -231,16 +230,19 @@ public class HuxiActivity extends AppCompatActivity {
     //返回和退出监听器
     private void setButtonBackAndExitListen() {
         Button buttonBack = findViewById(R.id.button_back);
-//        buttonBack.setOnClickListener(v -> android.os.Process.killProcess(android.os.Process.myPid()));
-        buttonBack.setOnClickListener(v -> System.exit(0));
+        buttonBack.setOnClickListener(v -> android.os.Process.killProcess(android.os.Process.myPid()));
+//        buttonBack.setOnClickListener(v -> System.exit(0));
 
         buttonExit = findViewById(R.id.button_exit);
+        // 回调，左上角的退出后重置 rocker 和 测量功能状态。
         buttonExit.setOnClickListener(v -> {
-            if (rocker.rockerState == true) {
+            // 两个 state 用来判断正在执行哪一个功能。
+            // 让飞行控件消失
+            if (rocker.rockerState) {
                 rocker.rockerViewLeft.setVisibility(View.GONE);
                 rocker.rockerViewRight.setVisibility(View.GONE);
                 rocker.rockerState = false;
-                viewStateChange();
+                changeExitAndArcMenuButtonState();
                 rocker.rollVerticalSeekBar.setVisibility(View.GONE);
                 rocker.panVerticalSeekBar.setVisibility(View.GONE);
                 rocker.altitudeVerticalSeekBar.setVisibility(View.GONE);
@@ -248,11 +250,9 @@ public class HuxiActivity extends AppCompatActivity {
                 rocker.buttonPitchDown.setVisibility(View.GONE);
                 Toast.makeText(HuxiActivity.this, "您已退出摇杆模式", Toast.LENGTH_SHORT).show();
             }
-            if (measure.functionState == true) {
-                result.setVisibility(View.INVISIBLE);
-                sceneControl.setAction(Action3D.PANSELECT3D);
-                viewStateChange();
-                measure.functionState = false;
+            // 退出的时候，让测量控件消失，重置选择的行为。
+            if (measure.functionState) {
+                measure.exitMeasurement();
                 Toast.makeText(HuxiActivity.this, "您已退出测量模式", Toast.LENGTH_SHORT).show();
             }
         });
@@ -265,21 +265,15 @@ public class HuxiActivity extends AppCompatActivity {
         AlertDialog alertDialog3 = new AlertDialog.Builder(this)
                 .setTitle("功能选择")
                 .setItems(items3, (dialogInterface, i) -> {
-                    if (measure.functionState == false) {
-                        measure.functionState = true;
-                        result.setVisibility(View.VISIBLE);
-                        viewStateChange();
+                    if (!measure.functionState) {
+                        changeExitAndArcMenuButtonState();
                         Toast.makeText(HuxiActivity.this, "您已进入测量模式", Toast.LENGTH_SHORT).show();
                         switch (i) {
                             case 0:
-                                measure.closeAnalysis();
-                                measure.AnalysisTypeArea = 0;
-                                measure.startMeasureAnalysis();
+                                measure.doDistanceMeasurement();
                                 break;
                             case 1:
-                                measure.closeAnalysis();
-                                measure.AnalysisTypeArea = 1;
-                                measure.selectRegion();
+                                measure.doAreaMeasurement();
                                 break;
                             default:
                                 break;
@@ -292,7 +286,14 @@ public class HuxiActivity extends AppCompatActivity {
     }
 
 
-    public void viewStateChange() {
+    /**
+     * 关注退出按钮的状态。
+     * 在退出的时候，让 arcMenu 设置可见，退出按钮不可见。
+     * 在进入功能的时候，让 arcMenu 设置不可见，退出按钮可见。
+     *
+     * 使用 public 是为了让 View 能够和这个进行交互。
+     */
+    public void changeExitAndArcMenuButtonState() {
         if (buttonExit.getVisibility() == View.VISIBLE && arcMenu.getVisibility() == View.INVISIBLE) {
             buttonExit.setVisibility(View.INVISIBLE);
             arcMenu.setVisibility(View.VISIBLE);
