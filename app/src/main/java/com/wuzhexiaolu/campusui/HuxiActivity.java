@@ -2,7 +2,6 @@ package com.wuzhexiaolu.campusui;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
@@ -33,8 +32,6 @@ import com.wuzhexiaolu.campusui.ui.*;
 import com.wuzhexiaolu.campusui.function.Measure;
 import com.wuzhexiaolu.campusui.geocomponent.FlyComponent;
 import com.wuzhexiaolu.campusui.geocomponent.LandmarkComponent;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class HuxiActivity extends AppCompatActivity {
@@ -282,7 +279,7 @@ public class HuxiActivity extends AppCompatActivity {
                             case 1:
                                 measure.closeAnalysis();
                                 measure.AnalysisTypeArea = 1;
-                                measure.startSurearea();
+                                measure.selectRegion();
                                 break;
                             default:
                                 break;

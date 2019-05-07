@@ -1,17 +1,13 @@
 package com.wuzhexiaolu.campusui.function;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.widget.TextView;
 
-import com.supermap.data.GeoPoint3D;
-import com.supermap.data.GeoStyle3D;
-import com.supermap.data.Point3D;
 import com.supermap.realspace.Action3D;
-import com.supermap.realspace.Scene;
 import com.supermap.realspace.SceneControl;
-import com.supermap.realspace.Sightline;
 import com.supermap.realspace.Tracking3DEvent;
 import com.supermap.realspace.Tracking3DListener;
 
@@ -20,7 +16,6 @@ public class Measure {
     private SceneControl sceneControl;
     private TextView result;
 
-    private Sightline sightline;
     private Handler totalLengthHandler;
 
     public int AnalysisTypeArea = 1;
@@ -30,6 +25,7 @@ public class Measure {
         this.result = result;
         this.sceneControl = sceneControl;
         totalLengthHandler = new MeasureHandler();
+        Tracking3DListener mTracking3dListener = event -> initAnalysis(sceneControl, event);
         sceneControl.addTrackingListener(mTracking3dListener);
     }
 
@@ -37,7 +33,7 @@ public class Measure {
         sceneControl.setAction(Action3D.MEASUREDISTANCE3D);
     }
 
-    public void startSurearea() {
+    public void selectRegion() {
         sceneControl.setAction(Action3D.MEASUREAREA3D);
 
     }
@@ -47,19 +43,9 @@ public class Measure {
         result.setText("");
     }
 
-    private Tracking3DListener mTracking3dListener = new Tracking3DListener() {
+    private void initAnalysis(SceneControl sceneControl, Tracking3DEvent event) {
 
-        @Override
-        public void tracking(Tracking3DEvent event) {
-
-            initAnalySis(sceneControl, event);
-
-        }
-    };
-
-    public void initAnalySis(SceneControl sceneControl, Tracking3DEvent event) {
-
-        if (sightline != null && sceneControl.getAction() == Action3D.CREATEPOINT3D) {
+/*        if (sightline != null && sceneControl.getAction() == Action3D.CREATEPOINT3D) {
 
             Point3D p3D = new Point3D(event.getX(), event.getY(), event.getZ());
 
@@ -80,10 +66,11 @@ public class Measure {
                 sceneControl.getScene().getTrackingLayer().add(geoPoint3D, "point");
             }
 
-        } else if (sceneControl.getAction() == Action3D.MEASUREDISTANCE3D) {
+        } else */
+        if (sceneControl.getAction() == Action3D.MEASUREDISTANCE3D) {
             measureDistance(event);
         } else if (sceneControl.getAction() == Action3D.MEASUREAREA3D) {
-            measureSurearea(event);
+            measureSelectedRegionArea(event);
         }
     }
 
@@ -97,7 +84,7 @@ public class Measure {
         totalLengthHandler.sendMessage(msg);
     }
 
-    private void measureSurearea(Tracking3DEvent event) {
+    private void measureSelectedRegionArea(Tracking3DEvent event) {
         double TotalArea = event.getTotalArea();
         Message msg = new Message();
         Bundle bundle = new Bundle();
@@ -106,7 +93,8 @@ public class Measure {
         totalLengthHandler.sendMessage(msg);
     }
 
-    class MeasureHandler extends Handler {
+    @SuppressLint("HandlerLeak")
+    private class MeasureHandler extends Handler {
 
         @Override
         public void handleMessage(Message msg) {
