@@ -8,6 +8,7 @@ import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -36,8 +37,12 @@ import com.wuzhexiaolu.campusui.geocomponent.LandmarkComponent;
 
 public class HuxiActivity extends AppCompatActivity {
     public static final String rootPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
-    public static final String flyRoutePathName = rootPath + "/SuperMap/demo/CBD_android/wujing.fpf";
-    public static final String workspacePath = rootPath + "/SuperMap/demo/CBD_android/CBD_android.sxwu";
+
+    public static final String flyRoutePathName = rootPath + "/SuperMap/demo/osgb/HuxiCampus/fly_routes.fpf";
+    public static final String workspacePath = rootPath + "/SuperMap/demo/osgb/HuxiCampus/HuxiCampus.sxwu";
+//
+//    public static final String flyRoutePathName = rootPath + "/SuperMap/demo/CBD_android/CBD_android.fpf";
+//    public static final String workspacePath = rootPath + "/SuperMap/demo/CBD_android/CBD_android.sxwu";
 
     private Workspace workspace;
     private SceneControl sceneControl;
@@ -60,6 +65,14 @@ public class HuxiActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_huxi);
+        // 申请权限和证书设置
+        boolean isLicenseAvailable = isLicenseAvailable();
+        if (!isLicenseAvailable) {
+            Toast.makeText(this, "许可文件无效", Toast.LENGTH_SHORT).show();
+            Log.d(LandmarkComponent.TAG, "initGeoComponent: Licence Unavailable");
+            android.os.Process.killProcess(android.os.Process.myPid());
+            return;
+        }
         sceneControl = findViewById(R.id.sceneControl);
         findViewById(R.id.full_screen_image_campus_d).setVisibility(View.VISIBLE);
         sceneControl.sceneControlInitedComplete(success -> {
@@ -80,10 +93,6 @@ public class HuxiActivity extends AppCompatActivity {
     }
 
     private void initGeoComponent() {
-        boolean isLicenseAvailable = isLicenseAvailable();
-        if (!isLicenseAvailable) {
-            return;
-        }
         openLocalScene();
         IntroductionDialog landIntroduceDialog = new IntroductionDialog(this);
         flyComponent = new FlyComponent(this, flyRoutePathName, landIntroduceDialog);
@@ -219,9 +228,11 @@ public class HuxiActivity extends AppCompatActivity {
         LicenseStatus licenseStatus = Environment.getLicenseStatus();
         if (!licenseStatus.isLicenseExsit()) {
             Toast.makeText(this, "许可不存在，场景打开失败，请加入许可", Toast.LENGTH_LONG).show();
+            Log.d(LandmarkComponent.TAG, "isLicenseAvailable: " + "许可不存在，场景打开失败，请加入许可");
             return false;
         } else if (!licenseStatus.isLicenseValid()) {
             Toast.makeText(this, "许可过期，场景打开失败，请更换有效许可", Toast.LENGTH_LONG).show();
+            Log.d(LandmarkComponent.TAG, "isLicenseAvailable: " + "许可过期，场景打开失败，请更换有效许可");
             return false;
         }
         return true;
