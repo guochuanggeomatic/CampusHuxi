@@ -10,7 +10,7 @@ import com.supermap.data.Environment;
 
 public class PermissionAndLicenseManager {
 
-    public static void getPermimssionAndLicense(Activity context) {
+    public static void getPermissionAndLicense(Activity context) {
         getPermission(context, new String[]{
                 Manifest.permission.READ_PHONE_STATE, Manifest.permission.INTERNET, Manifest.permission.MOUNT_UNMOUNT_FILESYSTEMS,
                 Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_NETWORK_STATE,

@@ -2,11 +2,7 @@ package com.wuzhexiaolu.campusui;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.eicky.ViewPagerGallery;
@@ -20,9 +16,10 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // 申请权限和证书设置
-        PermissionAndLicenseManager.getPermimssionAndLicense(MainActivity.this);
+        PermissionAndLicenseManager.getPermissionAndLicense(MainActivity.this);
         initGallery();
     }
+
     private void initGallery(){
         ViewPagerGallery gallery = (ViewPagerGallery) findViewById(R.id.gallery);
         List<Integer> list = new ArrayList<>();
