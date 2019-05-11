@@ -12,6 +12,7 @@ import android.view.MotionEvent;
 
 import com.supermap.realspace.Camera;
 import com.supermap.realspace.Scene;
+import com.wuzhexiaolu.campusui.HuxiActivity;
 import com.wuzhexiaolu.campusui.R;
 import com.supermap.data.Point3D;
 import com.supermap.realspace.Feature3D;
@@ -34,11 +35,14 @@ import java.util.Objects;
  */
 public class LandmarkComponent implements GestureDetector.OnGestureListener {
     public static final String TAG = "On LandmarkComponent";
-    private static final String layerName = "Favorite_KML";
-    private static final double radius = 10.;
-    private static final String rootPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
-    private static final String layerKMlPath = rootPath + "/SuperMap/initKML/default.kml";
-    private static final String cameraPath = rootPath + "/SuperMap/initKML/camera.txt";
+    private static final String layerName = "Landmark_KML";
+    private static final double radius = 5.;
+
+    /**
+     * 地标文件的地址，由外部传过来，通常和模型文件放在一起。
+     */
+    private String layerKMlPath;
+    private String cameraPath;
 
     private SceneControl sceneControl;
 
@@ -59,9 +63,11 @@ public class LandmarkComponent implements GestureDetector.OnGestureListener {
      * @param landmarkIntroduceDialog
      *      介绍对话框。
      */
-    public LandmarkComponent(Activity context, IntroductionDialog landmarkIntroduceDialog) {
+    public LandmarkComponent(Activity context, IntroductionDialog landmarkIntroduceDialog, String layerKMlPath, String cameraPath) {
         super();
         this.sceneControl = context.findViewById(R.id.sceneControl);
+        this.layerKMlPath = layerKMlPath;
+        this.cameraPath = cameraPath;
         loadFeaturesFromFile();
         this.landmarkIntroduceDialog = landmarkIntroduceDialog;
         GestureDetector gestureDetector = new GestureDetector(context, this);

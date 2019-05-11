@@ -2,6 +2,7 @@ package com.wuzhexiaolu.campusui;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
@@ -36,15 +37,22 @@ import com.wuzhexiaolu.campusui.geocomponent.LandmarkComponent;
 
 
 public class HuxiActivity extends AppCompatActivity {
-    public static final String rootPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
-
-    public static final String flyRoutePathName = rootPath + "/SuperMap/demo/osgb/HuxiCampus/fly_routes.fpf";
-    public static final String workspacePath = rootPath + "/SuperMap/demo/osgb/HuxiCampus/HuxiCampus.sxwu";
+    public static final String TAG = "HuxiActivity Tag:";
 //
-//    public static final String flyRoutePathName = rootPath + "/SuperMap/demo/CBD_android/CBD_android.fpf";
-//    public static final String workspacePath = rootPath + "/SuperMap/demo/CBD_android/CBD_android.sxwu";
+//    public static final String rootPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/SuperMap/demo/osgb/HuxiCampus/";
+// public static final String flyRoutePathName = rootPath + "fly_routes.fpf";
+//    public static final String workspacePath = rootPath + "HuxiCampus.sxwu";
+
+    public static final String rootPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/SuperMap/demo/CBD_android/";
+    public static final String flyRoutePathName = rootPath + "wujing.fpf";
+    public static final String workspacePath = rootPath + "CBD_android.sxwu";
+    public static final String layerKMLPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/SuperMap/initKML/default.kml";
+    public static final String cameraPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/SuperMap/initKML/camera.txt";
+    private static final WorkspaceType workspaceType = WorkspaceType.SXWU;
+    private static final String sceneName = "CBD_android";
 
     private Workspace workspace;
+
     private SceneControl sceneControl;
 
     private ArcMenu arcMenu;
@@ -64,18 +72,29 @@ public class HuxiActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // 申请权限和证书设置
+        PermissionAndLicenseManager.getPermissionAndLicense(this);
         setContentView(R.layout.activity_huxi);
         // 申请权限和证书设置
         boolean isLicenseAvailable = isLicenseAvailable();
         if (!isLicenseAvailable) {
-            Toast.makeText(this, "许可文件无效", Toast.LENGTH_SHORT).show();
-            Log.d(LandmarkComponent.TAG, "initGeoComponent: Licence Unavailable");
-            android.os.Process.killProcess(android.os.Process.myPid());
+            Log.d(LandmarkComponent.TAG, "Invalid license!:w");
+            // 不能够取消，只能够退出
+            AlertDialog licenseInvalidAlerdDialog = new AlertDialog.Builder(this)
+                    .setTitle("警告")
+                    .setMessage("证书无效！点击确定退出")
+                    .setPositiveButton("确定", (dialog, which) -> System.exit(0))
+                    .setCancelable(false)
+                    .create();
+            licenseInvalidAlerdDialog.show();
             return;
         }
         sceneControl = findViewById(R.id.sceneControl);
         findViewById(R.id.full_screen_image_campus_d).setVisibility(View.VISIBLE);
         sceneControl.sceneControlInitedComplete(success -> {
+            if (!isLicenseAvailable) {
+                return;
+            }
             initGeoComponent();
             initUIComponent();
             initFunctionComponent();
@@ -83,7 +102,15 @@ public class HuxiActivity extends AppCompatActivity {
             originalCamera = sceneControl.getScene().getCamera();
             Button resetCameraButton = findViewById(R.id.reset_camera_button);
             resetCameraButton.setOnClickListener(v -> sceneControl.getScene().setCamera(originalCamera));
+
+            Button changeModeButton = findViewById(R.id.simple_mode);
+            changeModeButton.setOnClickListener(v -> {
+                Scene scene = sceneControl.getScene();
+                scene.close();
+//                scene.open()
+            });
         });
+
     }
 
     private void initFunctionComponent() {
@@ -97,7 +124,7 @@ public class HuxiActivity extends AppCompatActivity {
         IntroductionDialog landIntroduceDialog = new IntroductionDialog(this);
         flyComponent = new FlyComponent(this, flyRoutePathName, landIntroduceDialog);
         // 场景浏览
-        landmarkComponent = new LandmarkComponent(this, landIntroduceDialog);
+        landmarkComponent = new LandmarkComponent(this, landIntroduceDialog, layerKMLPath, cameraPath);
     }
 
     //初始化超图场景
@@ -206,15 +233,14 @@ public class HuxiActivity extends AppCompatActivity {
         }
         // 根据工作空间类型，设置服务路径和类型信息。
         info.setServer(workspacePath);
-        info.setType(WorkspaceType.SXWU);
+        info.setType(workspaceType);
         // 场景关联工作空间
         if (workspace.open(info)) {
             Scene scene = sceneControl.getScene();
             scene.setWorkspace(workspace);
         }
         // 打开场景
-        String name = workspace.getScenes().get(0);
-        boolean ok = sceneControl.getScene().open(name);
+        boolean ok = sceneControl.getScene().open(sceneName);
         if (ok) {
             Toast.makeText(this, "打开场景成功", Toast.LENGTH_LONG).show();
         } else {
@@ -227,11 +253,9 @@ public class HuxiActivity extends AppCompatActivity {
     private boolean isLicenseAvailable() {
         LicenseStatus licenseStatus = Environment.getLicenseStatus();
         if (!licenseStatus.isLicenseExsit()) {
-            Toast.makeText(this, "许可不存在，场景打开失败，请加入许可", Toast.LENGTH_LONG).show();
             Log.d(LandmarkComponent.TAG, "isLicenseAvailable: " + "许可不存在，场景打开失败，请加入许可");
             return false;
         } else if (!licenseStatus.isLicenseValid()) {
-            Toast.makeText(this, "许可过期，场景打开失败，请更换有效许可", Toast.LENGTH_LONG).show();
             Log.d(LandmarkComponent.TAG, "isLicenseAvailable: " + "许可过期，场景打开失败，请更换有效许可");
             return false;
         }
@@ -241,8 +265,8 @@ public class HuxiActivity extends AppCompatActivity {
     //返回和退出监听器
     private void setButtonBackAndExitListen() {
         Button buttonBack = findViewById(R.id.button_back);
-        buttonBack.setOnClickListener(v -> android.os.Process.killProcess(android.os.Process.myPid()));
-//        buttonBack.setOnClickListener(v -> System.exit(0));
+//        buttonBack.setOnClickListener(v -> android.os.Process.killProcess(android.os.Process.myPid()));
+        buttonBack.setOnClickListener(v -> System.exit(0));
 
         buttonExit = findViewById(R.id.button_exit);
         // 回调，左上角的退出后重置 rocker 和 测量功能状态。

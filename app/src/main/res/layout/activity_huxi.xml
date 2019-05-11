@@ -43,6 +43,17 @@
         android:textColor="@color/white"
         android:textSize="10dp" />
 
+    <Button
+        android:id="@+id/simple_mode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/reset_camera_button"
+        android:layout_alignParentEnd="true"
+        android:background="@android:color/transparent"
+        android:text="精简模式"
+        android:textColor="@color/white"
+        android:textSize="10dp" />
+
     <com.sa90.materialarcmenu.ArcMenu
         android:id="@+id/arcMenu"
         android:layout_width="100dp"
