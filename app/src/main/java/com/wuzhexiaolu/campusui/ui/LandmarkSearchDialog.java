@@ -24,13 +24,13 @@ import com.wuzhexiaolu.campusui.geocomponent.LandmarkComponent;
  *
  * 这个类和地标组件的搜索功能响应。
  */
-public class SearchDialog extends Dialog {
+public class LandmarkSearchDialog extends Dialog {
 
     private ListView listView ;
     private SearchView searchView;
     private Context context;
 
-    public SearchDialog(Context context, View layout, int style) {
+    public LandmarkSearchDialog(Context context, View layout, int style) {
         super(context, style);
         setContentView(layout);
         this.context = context;

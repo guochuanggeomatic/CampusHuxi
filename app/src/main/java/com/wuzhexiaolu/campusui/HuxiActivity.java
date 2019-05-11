@@ -2,7 +2,6 @@ package com.wuzhexiaolu.campusui;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
@@ -14,7 +13,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.sa90.materialarcmenu.ArcMenu;
@@ -24,7 +22,6 @@ import com.supermap.data.LicenseStatus;
 import com.supermap.data.Workspace;
 import com.supermap.data.WorkspaceConnectionInfo;
 import com.supermap.data.WorkspaceType;
-import com.supermap.realspace.Action3D;
 import com.supermap.realspace.Camera;
 import com.supermap.realspace.Scene;
 import com.supermap.realspace.SceneControl;
@@ -56,9 +53,13 @@ public class HuxiActivity extends AppCompatActivity {
     private SceneControl sceneControl;
 
     private ArcMenu arcMenu;
+    private LandmarkSearchDialog landmarkSearchDialog;
     private Button buttonExit;
     // 初始视角
     private Camera originalCamera;
+
+    // 用来展示。在刷新的时候，能够用来重新给地标组件重置。
+    private IntroductionDialog landIntroduceDialog;
 
     //测量功能
     private Measure measure;
@@ -67,6 +68,8 @@ public class HuxiActivity extends AppCompatActivity {
     //飞行管理与地标
     private FlyComponent flyComponent;
     private LandmarkComponent landmarkComponent;
+
+    private SceneOpenState curSceneOpenState = SceneOpenState.NO_OPENED_SCENE;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
@@ -80,37 +83,60 @@ public class HuxiActivity extends AppCompatActivity {
         if (!isLicenseAvailable) {
             Log.d(LandmarkComponent.TAG, "Invalid license!:w");
             // 不能够取消，只能够退出
-            AlertDialog licenseInvalidAlerdDialog = new AlertDialog.Builder(this)
+            AlertDialog licenseInvalidAlertDialog = new AlertDialog.Builder(this)
                     .setTitle("警告")
                     .setMessage("证书无效！点击确定退出")
                     .setPositiveButton("确定", (dialog, which) -> System.exit(0))
                     .setCancelable(false)
                     .create();
-            licenseInvalidAlerdDialog.show();
+            licenseInvalidAlertDialog.show();
             return;
         }
+        AlertDialog graphicQualityAlertDialog = new AlertDialog.Builder(this)
+                .setTitle("提示")
+                .setMessage("增强场景显示需求更高的手机配置，可能会造成卡顿。可根据情况，在右上角选择增强场景显示或者流畅场景显示。")
+                .setCancelable(false)
+                .create();
         sceneControl = findViewById(R.id.sceneControl);
         findViewById(R.id.full_screen_image_campus_d).setVisibility(View.VISIBLE);
         sceneControl.sceneControlInitedComplete(success -> {
-            if (!isLicenseAvailable) {
-                return;
+            Log.d(TAG, "onCreate: Opened");
+            if (curSceneOpenState == SceneOpenState.NO_OPENED_SCENE) {
+                graphicQualityAlertDialog.dismiss();
+                initGeoComponent();
+                initUIComponent();
+                initFunctionComponent();
+                findViewById(R.id.full_screen_image_campus_d).setVisibility(View.GONE);
+                originalCamera = sceneControl.getScene().getCamera();
+                Button resetCameraButton = findViewById(R.id.reset_camera_button);
+                resetCameraButton.setOnClickListener(v -> sceneControl.getScene().setCamera(originalCamera));
+                curSceneOpenState = SceneOpenState.NO_LAKE_SURFACE;
+                Button changeModeButton = findViewById(R.id.simple_mode);
+
+                changeModeButton.setOnClickListener(v -> {
+                    Scene scene = sceneControl.getScene();
+                    scene.close();
+                    scene.refresh();
+                    boolean openedOk = scene.open(sceneName);
+                    if (!openedOk) {
+                        Log.d(TAG, "onCreate: failed to reload scene。");
+                        return ;
+                    }
+                    Log.d(TAG, "onCreate: changed Mode");
+                    String changeButtonText = "流畅场景";
+                    SceneOpenState changeSceneState = SceneOpenState.NO_LAKE_SURFACE;
+                    if (curSceneOpenState == SceneOpenState.NO_LAKE_SURFACE) {
+                        changeButtonText = "增强场景";
+                        changeSceneState = SceneOpenState.WITH_LAKE_SURFACE;
+                    }
+                    changeModeButton.setText(changeButtonText);
+                    curSceneOpenState = changeSceneState;
+                    landmarkComponent = new LandmarkComponent(this, landIntroduceDialog, layerKMLPath, cameraPath);
+                    // 新的地标需要重新映射到搜索框，不然调用以前的 landmarkComponent 是过期的
+                    landmarkSearchDialog.stuffWithLandmark(landmarkComponent);
+                });
             }
-            initGeoComponent();
-            initUIComponent();
-            initFunctionComponent();
-            findViewById(R.id.full_screen_image_campus_d).setVisibility(View.GONE);
-            originalCamera = sceneControl.getScene().getCamera();
-            Button resetCameraButton = findViewById(R.id.reset_camera_button);
-            resetCameraButton.setOnClickListener(v -> sceneControl.getScene().setCamera(originalCamera));
-
-            Button changeModeButton = findViewById(R.id.simple_mode);
-            changeModeButton.setOnClickListener(v -> {
-                Scene scene = sceneControl.getScene();
-                scene.close();
-//                scene.open()
-            });
         });
-
     }
 
     private void initFunctionComponent() {
@@ -121,7 +147,7 @@ public class HuxiActivity extends AppCompatActivity {
 
     private void initGeoComponent() {
         openLocalScene();
-        IntroductionDialog landIntroduceDialog = new IntroductionDialog(this);
+        landIntroduceDialog = new IntroductionDialog(this);
         flyComponent = new FlyComponent(this, flyRoutePathName, landIntroduceDialog);
         // 场景浏览
         landmarkComponent = new LandmarkComponent(this, landIntroduceDialog, layerKMLPath, cameraPath);
@@ -155,11 +181,11 @@ public class HuxiActivity extends AppCompatActivity {
         //获取SearchDialog并且对类进行初始化
         @SuppressLint("InflateParams")
         View view = getLayoutInflater().inflate(R.layout.search_dialog, null);
-        SearchDialog searchDialog = new SearchDialog(this, view, R.style.DialogTypeTheme);
-        searchDialog.stuffWithLandmark(landmarkComponent);
+        landmarkSearchDialog = new LandmarkSearchDialog(this, view, R.style.DialogTypeTheme);
+        landmarkSearchDialog.stuffWithLandmark(landmarkComponent);
         FloatingActionButton landmarkSearchFloatingActionButton = findViewById(R.id.searchSubMenu);
         landmarkSearchFloatingActionButton.setOnClickListener(v -> {
-            searchDialog.show();
+            landmarkSearchDialog.show();
             arcMenu.toggleMenu();
         });
 
@@ -247,6 +273,8 @@ public class HuxiActivity extends AppCompatActivity {
             Toast.makeText(this, "打开场景失败", Toast.LENGTH_LONG).show();
         }
     }
+
+//    private void reopenWith()
 
     // 判断许可是否可用
     @SuppressLint("ShowToast")
