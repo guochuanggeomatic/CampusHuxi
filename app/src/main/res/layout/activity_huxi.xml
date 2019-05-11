@@ -43,6 +43,13 @@
         android:textColor="@color/white"
         android:textSize="10dp" />
 
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="138dp"
+        android:layout_marginEnd="19dp" />
     <Button
         android:id="@+id/simple_mode"
         android:layout_width="68dp"

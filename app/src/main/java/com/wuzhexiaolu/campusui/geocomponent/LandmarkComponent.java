@@ -64,7 +64,6 @@ public class LandmarkComponent implements GestureDetector.OnGestureListener {
      *      介绍对话框。
      */
     public LandmarkComponent(Activity context, IntroductionDialog landmarkIntroduceDialog, String layerKMlPath, String cameraPath) {
-        super();
         this.sceneControl = context.findViewById(R.id.sceneControl);
         this.layerKMlPath = layerKMlPath;
         this.cameraPath = cameraPath;

@@ -131,6 +131,8 @@ public class HuxiActivity extends AppCompatActivity {
                     }
                     changeModeButton.setText(changeButtonText);
                     curSceneOpenState = changeSceneState;
+                    // 重新更新地标组件，因为重新载入 Scene，所以之前在更新地理组建的时候，
+                    // 重置了地标，同时搜索框的地理组建过期。
                     landmarkComponent = new LandmarkComponent(this, landIntroduceDialog, layerKMLPath, cameraPath);
                     // 新的地标需要重新映射到搜索框，不然调用以前的 landmarkComponent 是过期的
                     landmarkSearchDialog.stuffWithLandmark(landmarkComponent);

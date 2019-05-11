@@ -162,6 +162,7 @@ public class FlyStationPopupWindow extends PopupWindow {
         learningRoute.add(new FlyStationItem("图书馆"));
         //对布局内的控件进行设置
         FlyStationAdapter flyStations = new FlyStationAdapter(activity, R.layout.fly_station_item, learningRoute);
+        curFlyStationsAdapter = flyStations;
         stationAdapterHashMap.put("学习路线", flyStations);
 
         List<FlyStationItem> visitorRoute =  new ArrayList<>();
@@ -171,29 +172,40 @@ public class FlyStationPopupWindow extends PopupWindow {
         visitorRoute.add(new FlyStationItem("缙湖"));
         visitorRoute.add(new FlyStationItem("荷花池"));
         FlyStationAdapter visitorStations = new FlyStationAdapter(activity, R.layout.fly_station_item, visitorRoute);
-        stationAdapterHashMap.put("参观路线", visitorStations);
+//        stationAdapterHashMap.put("参观路线", visitorStations);
     }
 
     /**
      * 展现这个框，并且在飞行开始的时候，刷新下一站为黄星。
      * 如果这一飞行路线 routeName 的话，就不会进行追踪以及显示出来。
      *
+     * 如果没有找到地标站的话，就显示空 ListView 的。并且在展示之后尽快返回，
+     * 因为在空的 List 上面操作是不现实的事情。也不用监听变化
      * @param routeName
      *      飞行路线的名字。
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
     @SuppressLint("HandlerLeak")
     public void traceFlyStation(String routeName) {
-        curFlyStationsAdapter = stationAdapterHashMap.getOrDefault(routeName, null);
-        if (curFlyStationsAdapter == null) {
+        FlyStationAdapter flyStationsAdapter = stationAdapterHashMap.getOrDefault(routeName, null);
+        // 如果没有找到，那么就用空 List
+        if (flyStationsAdapter == null) {
             Log.d(TAG, "traceFlyStation: No route " + routeName);
-            return;
+            curFlyStationsAdapter = new FlyStationAdapter(activity, R.layout.fly_station_item, new ArrayList<>());
+        } else {
+            curFlyStationsAdapter = flyStationsAdapter;
         }
-        this.curFlyStationsAdapter = curFlyStationsAdapter;
         TextView anchorTextView = activity.findViewById(R.id.anchor_text_view);
         showAsDropDown(anchorTextView, 0, 0);
         ListView stationListView = flyStationView.findViewById(R.id.fly_station_list_view);
         stationListView.setAdapter(curFlyStationsAdapter);
+        TextView titleTextView = flyStationView.findViewById(R.id.route_name_text_view);
+        titleTextView.setText(routeName);
+        // 执行，使用Timer线程来查看飞行的状态。
+        curFlyStationsAdapter.setNotifyOnChange(true);
+        if (flyStationsAdapter == null) {
+           return ;
+        }
         stationListView.setOnItemClickListener((parent, view, position, id) -> {
             // 最后是否恢复飞行状态，取决于是否打断了飞行。使用变量来记录方便些。
             boolean isFlying = flyManager.getStatus() == FlyStatus.PLAY;
@@ -214,10 +226,6 @@ public class FlyStationPopupWindow extends PopupWindow {
             landmarkIntroduceDialog.setLayoutGravity(Gravity.CENTER);
             landmarkIntroduceDialog.show(clickedItem.getStationName());
         });
-        TextView titleTextView = flyStationView.findViewById(R.id.route_name_text_view);
-        titleTextView.setText(routeName);
-        // 执行，使用Timer线程来查看飞行的状态。
-        curFlyStationsAdapter.setNotifyOnChange(true);
         int size = curFlyStationsAdapter.getCount();
         flyProgressHandler = new Handler() {
             @Override
@@ -235,7 +243,6 @@ public class FlyStationPopupWindow extends PopupWindow {
                 if (curFlyStatus != FlyStatus.PAUSE && curStationIndex != nextStationIndex) {
                     // 到达终点的情况，nextStation 已经更新为 0，所以需要手动改变。
                     if (curFlyStatus == FlyStatus.STOP) {
-                        Log.d(TAG, "handleMessage: ENNNNNNNNNNNND");
                         nextStationIndex = (curStationIndex + size + 1) % size;
                         pausePlayButton.setBackgroundResource(R.drawable.fly_play);
                         // 终止发出监听器。
