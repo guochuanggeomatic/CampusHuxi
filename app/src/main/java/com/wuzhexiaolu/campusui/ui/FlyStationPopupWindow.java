@@ -117,6 +117,11 @@ public class FlyStationPopupWindow extends PopupWindow {
         pausePlayButton = flyStationView.findViewById(R.id.pause_play_button);
         pausePlayButton.setOnClickListener(v -> {
             FlyStatus curStatus = flyManager.getStatus();
+            // 如果飞行到了最后一站，那么再按下这个按钮之前，显示的都是最后一站。
+            // 所以需要先重置
+            if (curStatus == FlyStatus.STOP) {
+                resetFlyStationWindow();
+            }
             // 这个类能够加载，代表文件已经加载完成了。只需要在复杂的 stop操作。
             if (curStatus == FlyStatus.PLAY) {
                 pausePlayButton.setBackgroundResource(R.drawable.button_fly_play);
@@ -131,13 +136,7 @@ public class FlyStationPopupWindow extends PopupWindow {
             pausePlayButton.setBackgroundResource(R.drawable.button_fly_play);
             // 还需要重新设置起点五角星
             if (curFlyStationsAdapter != null && !curFlyStationsAdapter.isEmpty()) {
-                FlyStationItem startStation = curFlyStationsAdapter.getItem(0);
-                startStation.setReachableImageId(R.drawable.current_station_star);
-                for (int i = 1; i < curFlyStationsAdapter.getCount(); i++) {
-                    FlyStationItem otherStation = curFlyStationsAdapter.getItem(i);
-                    otherStation.setReachableImageId(R.drawable.other_station_dark_star);
-                }
-                curFlyStationsAdapter.setNotifyOnChange(true);
+                resetFlyStationWindow();
             }
         });
         Button exitFlyingButton = flyStationView.findViewById(R.id.fly_exit_button);
@@ -155,24 +154,35 @@ public class FlyStationPopupWindow extends PopupWindow {
     private void stuffArrayAdapterData() {
         List<FlyStationItem> learningRoute =  new ArrayList<>();
         // 第一个是起始点，需要亮起来。
-        learningRoute.add(new FlyStationItem("松园", R.drawable.current_station_star));
-        learningRoute.add(new FlyStationItem("二食堂"));
-        learningRoute.add(new FlyStationItem("综合楼"));
-        learningRoute.add(new FlyStationItem("第一教学楼"));
-        learningRoute.add(new FlyStationItem("图书馆"));
+        learningRoute.add(new FlyStationItem("二食堂", R.drawable.current_station_star, 0));
+        learningRoute.add(new FlyStationItem("一食堂", R.drawable.other_station_dark_star, 2));
+        learningRoute.add(new FlyStationItem("三食堂", R.drawable.other_station_dark_star, 7));
         //对布局内的控件进行设置
-        FlyStationAdapter flyStations = new FlyStationAdapter(activity, R.layout.fly_station_item, learningRoute);
+        FlyStationAdapter flyStations = new FlyStationAdapter(activity, R.layout.fly_station_item, learningRoute, 7);
         curFlyStationsAdapter = flyStations;
-        stationAdapterHashMap.put("学习路线", flyStations);
+        stationAdapterHashMap.put("餐饮路线", flyStations);
 
         List<FlyStationItem> visitorRoute =  new ArrayList<>();
-        visitorRoute.add(new FlyStationItem("大北门", R.drawable.current_station_star));
-        visitorRoute.add(new FlyStationItem("银杏大道"));
+        visitorRoute.add(new FlyStationItem("大北门", R.drawable.current_station_star, 0));
+        visitorRoute.add(new FlyStationItem("银杏大道", R.drawable.other_station_dark_star, 2));
         // 黑天鹅
-        visitorRoute.add(new FlyStationItem("缙湖"));
-        visitorRoute.add(new FlyStationItem("荷花池"));
-        FlyStationAdapter visitorStations = new FlyStationAdapter(activity, R.layout.fly_station_item, visitorRoute);
-//        stationAdapterHashMap.put("参观路线", visitorStations);
+        visitorRoute.add(new FlyStationItem("缙湖", R.drawable.other_station_dark_star, 8));
+        visitorRoute.add(new FlyStationItem("云湖", R.drawable.other_station_dark_star, 17));
+        visitorRoute.add(new FlyStationItem("东广场", R.drawable.other_station_dark_star, 19));
+        FlyStationAdapter visitorStations = new FlyStationAdapter(activity, R.layout.fly_station_item, visitorRoute, 20);
+        stationAdapterHashMap.put("参观路线", visitorStations);
+    }
+
+    private void resetFlyStationWindow() {
+        FlyStationItem startStation = curFlyStationsAdapter.getItem(0);
+        assert startStation != null;
+        startStation.setReachableImageId(R.drawable.current_station_star);
+        for (int i = 1; i < curFlyStationsAdapter.getCount(); i++) {
+            FlyStationItem otherStation = curFlyStationsAdapter.getItem(i);
+            assert otherStation != null;
+            otherStation.setReachableImageId(R.drawable.other_station_dark_star);
+        }
+        curFlyStationsAdapter.setNotifyOnChange(true);
     }
 
     /**
@@ -191,7 +201,7 @@ public class FlyStationPopupWindow extends PopupWindow {
         // 如果没有找到，那么就用空 List
         if (flyStationsAdapter == null) {
             Log.d(TAG, "traceFlyStation: No route " + routeName);
-            curFlyStationsAdapter = new FlyStationAdapter(activity, R.layout.fly_station_item, new ArrayList<>());
+            curFlyStationsAdapter = new FlyStationAdapter(activity, R.layout.fly_station_item, new ArrayList<>(), 0);
         } else {
             curFlyStationsAdapter = flyStationsAdapter;
         }
@@ -203,6 +213,7 @@ public class FlyStationPopupWindow extends PopupWindow {
         titleTextView.setText(routeName);
         // 执行，使用Timer线程来查看飞行的状态。
         curFlyStationsAdapter.setNotifyOnChange(true);
+        // 空的 ListView 不能够进行变化，不能响应事件。
         if (flyStationsAdapter == null) {
            return ;
         }
@@ -211,11 +222,11 @@ public class FlyStationPopupWindow extends PopupWindow {
             boolean isFlying = flyManager.getStatus() == FlyStatus.PLAY;
             if (isFlying) {
                 flyManager.pause();
-                pausePlayButton.setBackgroundResource(R.drawable.fly_play);
+                pausePlayButton.setBackgroundResource(R.drawable.button_fly_play);
                 // 恢复飞行
                 landmarkIntroduceDialog.setOnDismissListener((dialog)-> {
                     flyManager.play();
-                    pausePlayButton.setBackgroundResource(R.drawable.fly_pause);
+                    pausePlayButton.setBackgroundResource(R.drawable.button_fly_pause);
                 });
             } else {
                 // 避免重新开始飞行，让他什么都不做
@@ -226,37 +237,41 @@ public class FlyStationPopupWindow extends PopupWindow {
             landmarkIntroduceDialog.setLayoutGravity(Gravity.CENTER);
             landmarkIntroduceDialog.show(clickedItem.getStationName());
         });
-        int size = curFlyStationsAdapter.getCount();
+//        int size = curFlyStationsAdapter.getCount();
         flyProgressHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 // 更新站点信息
-                int nextStationIndex = flyManager.getCurrentStopIndex();
-                Log.d(TAG, "handleMessage: " + nextStationIndex );
-                // round-up
-                nextStationIndex = (nextStationIndex + size) % size;
-                Log.d(TAG, "handleMessage: " + nextStationIndex);
+                int nextStopIndex = flyManager.getCurrentStopIndex();
+                Log.d(TAG, "handleMessage: " + nextStopIndex );
+                Log.d(TAG, "handleMessage: " + nextStopIndex);
                 FlyStatus curFlyStatus = flyManager.getStatus();
-                // 如果是暂停的情况，不需要做什么，更新的情况仅仅是飞行中或者结尾,
-                // 并且只有站点发生改变。
-                // 由于 nextStationIndex 返回0，可以使用 curStationIndex > nextStationIndex 判断是否到达终点
-                if (curFlyStatus != FlyStatus.PAUSE && curStationIndex != nextStationIndex) {
+                int numStations = curFlyStationsAdapter.getCount();
+                // 如果是暂停的情况，不需要做什么，更新的情况仅仅是飞行中或者结尾,并且只有站点发生改变。
+                // 由于 nextStopIndex 返回0，可以使用 curStationIndex > nextStopIndex 判断是否到达终点
+                // 如果在下一站会有所相同或者不同，那么才改变。
+                int roundedNextStationIndex = (curStationIndex + 1) % numStations;
+                int nextStationIndex = curFlyStationsAdapter.getItem(roundedNextStationIndex).getCurStationIndex();
+                // 到了下一站
+                if (curFlyStatus != FlyStatus.PAUSE && nextStationIndex == nextStopIndex) {
                     // 到达终点的情况，nextStation 已经更新为 0，所以需要手动改变。
                     if (curFlyStatus == FlyStatus.STOP) {
-                        nextStationIndex = (curStationIndex + size + 1) % size;
-                        pausePlayButton.setBackgroundResource(R.drawable.fly_play);
+                        pausePlayButton.setBackgroundResource(R.drawable.button_fly_play);
                         // 终止发出监听器。
                         flyStationTimerTask.cancel();
+                        // 不做改变，因为最后一战的 flyManager 获取的是起点（0）的 flyStop，如果不马上返回，
+                        // 那么就会当前站点更新到下一个站点（起点）去了。
+                        return;
                     }
-                    FlyStationItem curFlyStationItem = curFlyStationsAdapter.getItem(curStationIndex);
+                    FlyStationItem curFlyStationItem = curFlyStationsAdapter.getItem(curStationIndex % numStations);
                     assert curFlyStationItem != null;
                     curFlyStationItem.setReachableImageId(R.drawable.other_station_dark_star);
-                    FlyStationItem nextFlyStationItem = curFlyStationsAdapter.getItem(nextStationIndex);
+                    FlyStationItem nextFlyStationItem = curFlyStationsAdapter.getItem(roundedNextStationIndex % numStations);
                     assert nextFlyStationItem != null;
                     nextFlyStationItem.setReachableImageId(R.drawable.current_station_star);
                     // 如果设置在改动的时候，才重新载入，那么影响也没有那么大。
                     curFlyStationsAdapter.notifyDataSetChanged();
-                    curStationIndex = nextStationIndex;
+                    curStationIndex = roundedNextStationIndex;
                 }
             }
         };
@@ -284,6 +299,10 @@ public class FlyStationPopupWindow extends PopupWindow {
          * 这个 Item 的图片，代表了飞行的下一站是不是自己。
          */
         private int reachableImageId;
+        /**
+         * 用来记录飞行站点，帮助方便变化的时候更新当前飞行站点。
+         */
+        private int curStationIndex;
 
         /**
          * @param stationName
@@ -291,9 +310,10 @@ public class FlyStationPopupWindow extends PopupWindow {
          * @param reachableImageId
          *      指定图片作为站点的提示。
          */
-        FlyStationItem(String stationName, int reachableImageId) {
+        FlyStationItem(String stationName, int reachableImageId, int curStationIndex) {
             this.stationName = stationName;
             this.reachableImageId = reachableImageId;
+            this.curStationIndex = curStationIndex;
         }
 
         /**
@@ -323,10 +343,15 @@ public class FlyStationPopupWindow extends PopupWindow {
         int getReachableImageId() {
             return reachableImageId;
         }
+
+        public int getCurStationIndex() {
+            return curStationIndex;
+        }
     }
 
     /**
-     * 用来管理加载的 ListView
+     * 用来管理加载的 ListView，最后一个站设置为最后一个 FlyStop 的位置，
+     * 方便飞行到达最后一个站点的时候站点能够正确变化。
      */
     private static class FlyStationAdapter extends ArrayAdapter<FlyStationItem> {
 
@@ -334,6 +359,11 @@ public class FlyStationPopupWindow extends PopupWindow {
          * 用来在找到每一项 item。
          */
         private int resourceId;
+        /**
+         * 用来保存飞行有多少个站点，不是显示右侧的的站点，而是飞行路线文件中，
+         * 实际的 flyStop.
+         */
+        private int numFlyStops;
 
         /**
          * @param context
@@ -341,9 +371,10 @@ public class FlyStationPopupWindow extends PopupWindow {
          *      FlyStationItem 所在的控件。
          * @param objects
          */
-        FlyStationAdapter(Context context, int resource, List<FlyStationItem> objects) {
+        FlyStationAdapter(Context context, int resource, List<FlyStationItem> objects, int numFlyStops) {
             super(context, resource, objects);
             resourceId = resource;
+            this.numFlyStops = numFlyStops;
         }
 
         // 更新每一站的信息，使用上 FlyStationItem 的数据。
@@ -359,6 +390,10 @@ public class FlyStationPopupWindow extends PopupWindow {
             ImageView stationReachableImageView = view.findViewById(R.id.dest_station_image_view);
             stationReachableImageView.setBackgroundResource(stationReachable);
             return view;
+        }
+
+        public int getNumFlyStops() {
+            return numFlyStops;
         }
     }
 }

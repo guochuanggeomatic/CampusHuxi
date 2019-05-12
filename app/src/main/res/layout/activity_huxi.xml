@@ -30,36 +30,75 @@
         android:background="@android:drawable/ic_menu_close_clear_cancel"
         android:visibility="invisible" />
 
-    <Button
-        android:id="@+id/reset_camera_button"
-        android:layout_width="68dp"
-        android:layout_height="32dp"
-        android:layout_alignEnd="@+id/button_exit"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="69dp"
-        android:layout_marginEnd="-30dp"
-        android:background="@android:color/transparent"
-        android:text="初始视角"
-        android:textColor="@color/white"
-        android:textSize="10dp" />
-
-    <Switch
-        android:layout_width="wrap_content"
+    <TextView
+        android:layout_width="67dp"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="138dp"
-        android:layout_marginEnd="19dp" />
-    <Button
-        android:id="@+id/simple_mode"
-        android:layout_width="68dp"
-        android:layout_height="33dp"
-        android:layout_below="@+id/reset_camera_button"
-        android:layout_alignParentEnd="true"
+        android:layout_marginStart="643dp"
+        android:layout_marginTop="75dp"
+        android:layout_marginEnd="18dp"
         android:background="@android:color/transparent"
-        android:text="增强显示"
+        android:text="初始视角"
+        android:textAlignment="center"
         android:textColor="@color/white"
         android:textSize="10dp" />
+
+    <Button
+        android:id="@+id/reset_camera_button"
+        android:layout_width="31dp"
+        android:layout_height="24dp"
+        android:layout_alignEnd="@+id/button_exit"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="91dp"
+        android:layout_marginEnd="-11dp"
+        android:background="@drawable/button_reset_camera"
+        android:textSize="10dp" />
+
+    <TextView
+        android:layout_width="68dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/reset_camera_button"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="17dp"
+        android:text="湖面特效"
+        android:textAlignment="center"
+        android:textColor="@android:color/white"
+        android:textSize="10dp" />
+
+    <Switch
+        android:id="@+id/show_lake_surface_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="17dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="141dp"
+        android:layout_marginEnd="14dp"
+        android:checked="true" />
+
+    <TextView
+        android:layout_width="67dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/reset_camera_button"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="58dp"
+        android:layout_marginEnd="17dp"
+        android:text="显示地标"
+        android:textAlignment="center"
+        android:textColor="@android:color/white"
+        android:textSize="10dp" />
+
+    <Switch
+        android:id="@+id/landmark_visible_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="17dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="194dp"
+        android:layout_marginEnd="14dp"
+        android:layout_marginBottom="-3dp"
+        android:checked="true" />
 
     <com.sa90.materialarcmenu.ArcMenu
         android:id="@+id/arcMenu"
@@ -200,6 +239,8 @@
         android:layout_height="match_parent"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="0dp"
         android:background="@drawable/campus1"
         android:visibility="invisible" />
 

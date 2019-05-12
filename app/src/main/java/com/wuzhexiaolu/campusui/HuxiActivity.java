@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import com.sa90.materialarcmenu.ArcMenu;
@@ -35,20 +36,24 @@ import com.wuzhexiaolu.campusui.geocomponent.LandmarkComponent;
 
 public class HuxiActivity extends AppCompatActivity {
     public static final String TAG = "HuxiActivity Tag:";
+    //
+    private static final String rootPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/SuperMap/demo/osgb/HuxiCampus/";
+    private String flyRoutePathName = rootPath + "fly_routes.fpf";
+    private String workspacePath = rootPath + "HuxiCampus.sxwu";
+    private String layerKMLPath = rootPath + "HuxiCampus.kml";
+    private String cameraPath = rootPath + "cameras.txt";
+
+    private static final String rootPathNoSurface = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/SuperMap/demo/HuxiCampus/";
+    private static final String workspacePathNoSurface = rootPathNoSurface + "HuxiCampus2d.sxwu";
 //
-//    public static final String rootPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/SuperMap/demo/osgb/HuxiCampus/";
-// public static final String flyRoutePathName = rootPath + "fly_routes.fpf";
-//    public static final String workspacePath = rootPath + "HuxiCampus.sxwu";
+//    public static final String rootPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/SuperMap/demo/CBD_android/";
+//    public static final String flyRoutePathName = rootPath + "wujing.fpf";
+//    public static final String workspacePath = rootPath + "CBD_android.sxwu";
+//    public static final String layerKMLPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/SuperMap/initKML/default.kml";
+//    public static final String cameraPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/SuperMap/initKML/camera.txt";
+//    private static final String sceneName = "CBD_android";
 
-    public static final String rootPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/SuperMap/demo/CBD_android/";
-    public static final String flyRoutePathName = rootPath + "wujing.fpf";
-    public static final String workspacePath = rootPath + "CBD_android.sxwu";
-    public static final String layerKMLPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/SuperMap/initKML/default.kml";
-    public static final String cameraPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/SuperMap/initKML/camera.txt";
     private static final WorkspaceType workspaceType = WorkspaceType.SXWU;
-    private static final String sceneName = "CBD_android";
-
-    private Workspace workspace;
 
     private SceneControl sceneControl;
 
@@ -94,12 +99,12 @@ public class HuxiActivity extends AppCompatActivity {
         }
         AlertDialog graphicQualityAlertDialog = new AlertDialog.Builder(this)
                 .setTitle("提示")
-                .setMessage("增强场景显示需求更高的手机配置，可能会造成卡顿。可根据情况，在右上角选择增强场景显示或者流畅场景显示。")
-                .setCancelable(false)
+                .setMessage("湖面特效显示需求更高的手机配置，可能会造成卡顿。可根据情况，在右上角选择是否禁用湖面特效。")
                 .create();
         sceneControl = findViewById(R.id.sceneControl);
         findViewById(R.id.full_screen_image_campus_d).setVisibility(View.VISIBLE);
         sceneControl.sceneControlInitedComplete(success -> {
+            graphicQualityAlertDialog.show();
             Log.d(TAG, "onCreate: Opened");
             if (curSceneOpenState == SceneOpenState.NO_OPENED_SCENE) {
                 graphicQualityAlertDialog.dismiss();
@@ -110,26 +115,20 @@ public class HuxiActivity extends AppCompatActivity {
                 originalCamera = sceneControl.getScene().getCamera();
                 Button resetCameraButton = findViewById(R.id.reset_camera_button);
                 resetCameraButton.setOnClickListener(v -> sceneControl.getScene().setCamera(originalCamera));
-                curSceneOpenState = SceneOpenState.NO_LAKE_SURFACE;
-                Button changeModeButton = findViewById(R.id.simple_mode);
+                curSceneOpenState = SceneOpenState.WITH_LAKE_SURFACE;
 
-                changeModeButton.setOnClickListener(v -> {
-                    Scene scene = sceneControl.getScene();
-                    scene.close();
-                    scene.refresh();
-                    boolean openedOk = scene.open(sceneName);
+                Switch showLakeSurfaceSwitch = findViewById(R.id.show_lake_surface_switch);
+                showLakeSurfaceSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                    boolean openedOk = openLocalScene(isChecked ? workspacePath : workspacePathNoSurface);
                     if (!openedOk) {
                         Log.d(TAG, "onCreate: failed to reload scene。");
                         return ;
                     }
                     Log.d(TAG, "onCreate: changed Mode");
-                    String changeButtonText = "流畅场景";
-                    SceneOpenState changeSceneState = SceneOpenState.NO_LAKE_SURFACE;
-                    if (curSceneOpenState == SceneOpenState.NO_LAKE_SURFACE) {
-                        changeButtonText = "增强场景";
-                        changeSceneState = SceneOpenState.WITH_LAKE_SURFACE;
+                    SceneOpenState changeSceneState = SceneOpenState.WITH_LAKE_SURFACE;
+                    if (curSceneOpenState == SceneOpenState.WITH_LAKE_SURFACE && !isChecked) {
+                        changeSceneState = SceneOpenState.NO_LAKE_SURFACE;
                     }
-                    changeModeButton.setText(changeButtonText);
                     curSceneOpenState = changeSceneState;
                     // 重新更新地标组件，因为重新载入 Scene，所以之前在更新地理组建的时候，
                     // 重置了地标，同时搜索框的地理组建过期。
@@ -137,6 +136,9 @@ public class HuxiActivity extends AppCompatActivity {
                     // 新的地标需要重新映射到搜索框，不然调用以前的 landmarkComponent 是过期的
                     landmarkSearchDialog.stuffWithLandmark(landmarkComponent);
                 });
+
+                Switch landmarkVisibleSwitch = findViewById(R.id.landmark_visible_switch);
+                landmarkVisibleSwitch.setOnCheckedChangeListener(((buttonView, isChecked) -> landmarkComponent.setLandmarkVisible(isChecked)));
             }
         });
     }
@@ -148,7 +150,7 @@ public class HuxiActivity extends AppCompatActivity {
     }
 
     private void initGeoComponent() {
-        openLocalScene();
+        openLocalScene(workspacePath);
         landIntroduceDialog = new IntroductionDialog(this);
         flyComponent = new FlyComponent(this, flyRoutePathName, landIntroduceDialog);
         // 场景浏览
@@ -207,7 +209,6 @@ public class HuxiActivity extends AppCompatActivity {
             arcMenu.toggleMenu();
             showMeasureListDialog();
         });
-        // 应该 RAII
         findViewById(R.id.advanceTechnologySubMenu).setOnClickListener(v -> {
             arcMenu.toggleMenu();
             if (rocker.rockerState == false) {
@@ -253,27 +254,32 @@ public class HuxiActivity extends AppCompatActivity {
     }
 
     // 打开一个本地场景
-    private void openLocalScene() {
+    private boolean openLocalScene(String workspacePath) {
         WorkspaceConnectionInfo info = new WorkspaceConnectionInfo();
         // 新建一个工作空间对象
-        if (workspace == null) {
-            workspace = new Workspace();
-        }
+        Workspace workspace = new Workspace();
         // 根据工作空间类型，设置服务路径和类型信息。
         info.setServer(workspacePath);
         info.setType(workspaceType);
         // 场景关联工作空间
-        if (workspace.open(info)) {
-            Scene scene = sceneControl.getScene();
+        Scene scene = sceneControl.getScene();
+        boolean openInfoOk = workspace.open(info);
+        if (openInfoOk) {
+            scene.close();
             scene.setWorkspace(workspace);
+        } else {
+            return false;
         }
         // 打开场景
-        boolean ok = sceneControl.getScene().open(sceneName);
+        String sceneName = workspace.getScenes().get(0);
+        boolean ok = scene.open(sceneName);
+        scene.refresh();
         if (ok) {
             Toast.makeText(this, "打开场景成功", Toast.LENGTH_LONG).show();
         } else {
             Toast.makeText(this, "打开场景失败", Toast.LENGTH_LONG).show();
         }
+        return ok;
     }
 
 //    private void reopenWith()
@@ -321,6 +327,7 @@ public class HuxiActivity extends AppCompatActivity {
             }
             buttonExit.setVisibility(View.INVISIBLE);
             arcMenu.setVisibility(View.VISIBLE);
+            landmarkComponent.setEnableShowIntroduceDialog(true);
         });
     }
 
@@ -331,6 +338,7 @@ public class HuxiActivity extends AppCompatActivity {
         AlertDialog alertDialog3 = new AlertDialog.Builder(this)
                 .setTitle("功能选择")
                 .setItems(items3, (dialogInterface, i) -> {
+                    landmarkComponent.setEnableShowIntroduceDialog(false);
                     if (!measure.functionState) {
                         buttonExit.setVisibility(View.VISIBLE);
                         arcMenu.setVisibility(View.INVISIBLE);
