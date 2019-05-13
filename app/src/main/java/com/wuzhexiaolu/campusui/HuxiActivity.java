@@ -117,6 +117,10 @@ public class HuxiActivity extends AppCompatActivity {
                 resetCameraButton.setOnClickListener(v -> sceneControl.getScene().setCamera(originalCamera));
                 curSceneOpenState = SceneOpenState.WITH_LAKE_SURFACE;
 
+                Switch landmarkVisibleSwitch = findViewById(R.id.landmark_visible_switch);
+                // 只有变化的时候才会消失
+                landmarkVisibleSwitch.setOnCheckedChangeListener(((buttonView, isChecked) -> landmarkComponent.setLandmarkVisible(isChecked)));
+
                 Switch showLakeSurfaceSwitch = findViewById(R.id.show_lake_surface_switch);
                 showLakeSurfaceSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
                     boolean openedOk = openLocalScene(isChecked ? workspacePath : workspacePathNoSurface);
@@ -135,10 +139,12 @@ public class HuxiActivity extends AppCompatActivity {
                     landmarkComponent = new LandmarkComponent(this, landIntroduceDialog, layerKMLPath, cameraPath);
                     // 新的地标需要重新映射到搜索框，不然调用以前的 landmarkComponent 是过期的
                     landmarkSearchDialog.stuffWithLandmark(landmarkComponent);
+                    // 这个必须要放在更新 landmarkComponent 之后才能够更新，不然这个 landmarkComponent 已经过期了。
+                    // 如果原来并没有显示地标，那么重新设置。
+                    if (!landmarkVisibleSwitch.isChecked()) {
+                        landmarkComponent.setLandmarkVisible(false);
+                    }
                 });
-
-                Switch landmarkVisibleSwitch = findViewById(R.id.landmark_visible_switch);
-                landmarkVisibleSwitch.setOnCheckedChangeListener(((buttonView, isChecked) -> landmarkComponent.setLandmarkVisible(isChecked)));
             }
         });
     }

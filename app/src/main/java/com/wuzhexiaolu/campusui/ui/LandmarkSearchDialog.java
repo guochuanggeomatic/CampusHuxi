@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.PixelFormat;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.support.v7.widget.SearchView;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -52,6 +54,7 @@ public class LandmarkSearchDialog extends Dialog {
      * 接受一个Landmark，然后利用它的内容来填充ListView。点击对应Item的时候，
      * 地标组件能够响应。
      */
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public void stuffWithLandmark(LandmarkComponent landmarkComponent) {
         //对布局内的控件进行设置
 //        final ArrayAdapter arrayAdapter = new ArrayAdapter<String>(context,
@@ -76,8 +79,9 @@ public class LandmarkSearchDialog extends Dialog {
         listView.setOnItemClickListener((parent, view, position, id) -> {
             String itemName = (String) arrayAdapter.getItem(position);
             // 不使用传入下标是因为这儿地标名字的下标发生了改变，只能传入名字。
-            landmarkComponent.flyToSpecifiedLand(itemName);
             hide();
+            landmarkComponent.flyToSpecifiedLand(itemName);
+            landmarkComponent.showIntroductionDialogWith(itemName);
         });
         //显示搜索按钮
         searchView.setSubmitButtonEnabled(true);

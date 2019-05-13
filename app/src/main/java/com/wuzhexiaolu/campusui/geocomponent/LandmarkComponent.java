@@ -110,9 +110,17 @@ public class LandmarkComponent implements GestureDetector.OnGestureListener {
         }
 
         if (nearPoint != null && landmarkIntroduceDialog != null) {
-            landmarkIntroduceDialog.setLayoutGravity(Gravity.LEFT);
-            landmarkIntroduceDialog.show(nearPoint.getName());
+            showIntroductionDialogWith(nearPoint.getName());
         }
+    }
+
+    /**
+     * 搜索框点击的时候，打开对话信息框。
+     */
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void showIntroductionDialogWith(String name) {
+        landmarkIntroduceDialog.setLayoutGravity(Gravity.LEFT);
+        landmarkIntroduceDialog.show(name);
     }
 
     /**
