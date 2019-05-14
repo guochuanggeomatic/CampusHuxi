@@ -128,7 +128,7 @@ A校区：
 
 点击无人机模拟器之后，弹出如下无人机相关操作界面：
 
-<img src="./assets/uav_simulator.png" width="512" height="256">
+<img src="./assets/UAV_simulator.png" width="512" height="256">
 
 1. 拖动左侧摇杆：上下方向完成上升和下降功能，左右方向完成旋转功能。
 2. 拖动右侧摇杆：上下法国想完成前进和后退功能，左右方向完成平移功能。
