@@ -11,12 +11,6 @@ import com.supermap.data.Environment;
 public class PermissionAndLicenseManager {
 
     public static void getPermissionAndLicense(Activity context) {
-        getPermission(context, new String[]{
-                Manifest.permission.READ_PHONE_STATE, Manifest.permission.INTERNET, Manifest.permission.MOUNT_UNMOUNT_FILESYSTEMS,
-                Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_NETWORK_STATE,
-                Manifest.permission.READ_PHONE_STATE, Manifest.permission.CHANGE_WIFI_STATE, Manifest.permission.ACCESS_FINE_LOCATION
-        });
-
         String rootPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
         Environment.setLicensePath(rootPath +"/SuperMap/license/");
         Environment.setWebCacheDirectory(rootPath +"/SuperMap/WebCache/");

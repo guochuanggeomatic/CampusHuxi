@@ -12,6 +12,7 @@ import android.view.MotionEvent;
 
 import com.supermap.realspace.Camera;
 import com.supermap.realspace.Scene;
+import com.wuzhexiaolu.campusui.HuxiActivity;
 import com.wuzhexiaolu.campusui.R;
 import com.supermap.data.Point3D;
 import com.supermap.realspace.Feature3D;
@@ -34,11 +35,14 @@ import java.util.Objects;
  */
 public class LandmarkComponent implements GestureDetector.OnGestureListener {
     public static final String TAG = "On LandmarkComponent";
-    private static final String layerName = "Favorite_KML";
-    private static final double radius = 10.;
-    private static final String rootPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
-    private static final String layerKMlPath = rootPath + "/SuperMap/initKML/default.kml";
-    private static final String cameraPath = rootPath + "/SuperMap/initKML/camera.txt";
+    private static final String layerName = "Landmark_KML";
+    private static final double radius = 1.;
+
+    /**
+     * 地标文件的地址，由外部传过来，通常和模型文件放在一起。
+     */
+    private String layerKMlPath;
+    private String cameraPath;
 
     private SceneControl sceneControl;
 
@@ -50,6 +54,11 @@ public class LandmarkComponent implements GestureDetector.OnGestureListener {
     private ArrayList<LandFeature> landFeatures= new ArrayList<>();
 
     /**
+     * 在测量模式中，禁用点击地表响应地标。
+     */
+    private boolean enableShowIntroduceDialog = true;
+
+    /**
      * 这个构造器完成的对地标文件的打开，如果打开失败，那么将会创建一个空文件。
      * 构造的时候，文件缺失会抛出 IOException。并且自身为 null。随后设置给场景
      * 控制一个Detector.
@@ -59,9 +68,10 @@ public class LandmarkComponent implements GestureDetector.OnGestureListener {
      * @param landmarkIntroduceDialog
      *      介绍对话框。
      */
-    public LandmarkComponent(Activity context, IntroductionDialog landmarkIntroduceDialog) {
-        super();
+    public LandmarkComponent(Activity context, IntroductionDialog landmarkIntroduceDialog, String layerKMlPath, String cameraPath) {
         this.sceneControl = context.findViewById(R.id.sceneControl);
+        this.layerKMlPath = layerKMlPath;
+        this.cameraPath = cameraPath;
         loadFeaturesFromFile();
         this.landmarkIntroduceDialog = landmarkIntroduceDialog;
         GestureDetector gestureDetector = new GestureDetector(context, this);
@@ -77,6 +87,9 @@ public class LandmarkComponent implements GestureDetector.OnGestureListener {
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void nearByLandmark(Point point) {
+        if (!enableShowIntroduceDialog) {
+            return ;
+        }
         Scene scene = sceneControl.getScene();
         Point3D point3D = scene.pixelToGlobe(point, PixelToGlobeMode.TERRAINANDMODEL);
         double minDistance = radius;
@@ -97,9 +110,17 @@ public class LandmarkComponent implements GestureDetector.OnGestureListener {
         }
 
         if (nearPoint != null && landmarkIntroduceDialog != null) {
-            landmarkIntroduceDialog.setLayoutGravity(Gravity.LEFT);
-            landmarkIntroduceDialog.show(nearPoint.getName());
+            showIntroductionDialogWith(nearPoint.getName());
         }
+    }
+
+    /**
+     * 搜索框点击的时候，打开对话信息框。
+     */
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void showIntroductionDialogWith(String name) {
+        landmarkIntroduceDialog.setLayoutGravity(Gravity.LEFT);
+        landmarkIntroduceDialog.show(name);
     }
 
     /**
@@ -132,6 +153,17 @@ public class LandmarkComponent implements GestureDetector.OnGestureListener {
                 scene.setCamera(camera);
                 return ;
             }
+        }
+    }
+
+    /**
+     * 显示和隐藏地标，同时禁止响应地标的点击，在使用的过程中更好观看场景。
+     */
+    public void setLandmarkVisible(boolean visible) {
+        setEnableShowIntroduceDialog(visible);
+        for (LandFeature landFeature :
+                landFeatures) {
+            landFeature.getFeature3D().setVisible(visible);
         }
     }
 
@@ -214,6 +246,10 @@ public class LandmarkComponent implements GestureDetector.OnGestureListener {
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
         return false;
+    }
+
+    public void setEnableShowIntroduceDialog(boolean enableShowIntroduceDialog) {
+        this.enableShowIntroduceDialog = enableShowIntroduceDialog;
     }
 
     /**
